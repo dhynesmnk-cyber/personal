@@ -1,0 +1,129 @@
+---
+/**
+ * A compact stage strip: each step in order, with evaluation gates marked.
+ * Real list markup, so it reads correctly without the visuals. Connectors draw
+ * in sequence when the strip scrolls into view. Lays out horizontally when
+ * there is room and vertically when there is not (container query).
+ */
+interface Props {
+  steps: { name: string; gate?: boolean }[];
+  label: string;
+  tone?: 'light' | 'paper';
+}
+const { steps, label, tone = 'light' } = Astro.props;
+---
+
+<div class:list={['gp-wrap', `gp-wrap--${tone}`]}>
+  <ol class="gp" aria-label={label} data-reveal role="list">
+    {
+      steps.map((s, i) => (
+        <li class:list={['gp__step', s.gate && 'gp__step--gate']} style={`--i:${i}`}>
+          {s.gate && (
+            <span class="gp__gate" aria-hidden="true">
+              <span />
+              <span />
+            </span>
+          )}
+          <span>{s.name}</span>
+          {s.gate && <span class="visually-hidden"> (evaluation gate)</span>}
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .gp-wrap {
+    container-type: inline-size;
+  }
+
+  .gp {
+    --line: var(--forest-700);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.875rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gp__step {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: var(--white);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .gp-wrap--paper .gp__step {
+    background: var(--paper);
+  }
+
+  .gp__step--gate {
+    border-color: var(--forest-900);
+    background: var(--forest-900);
+    color: var(--paper);
+  }
+
+  .gp-wrap--paper .gp__step--gate {
+    background: var(--forest-900);
+  }
+
+  /* Two posts: the gate glyph. */
+  .gp__gate {
+    display: inline-flex;
+    gap: 3px;
+  }
+
+  .gp__gate span {
+    width: 2px;
+    height: 0.75rem;
+    border-radius: 1px;
+    background: var(--lime-200);
+  }
+
+  /* Connectors: vertical in narrow containers. */
+  .gp__step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 1.1rem;
+    top: 100%;
+    width: 1px;
+    height: 0.875rem;
+    background: var(--line);
+    transform-origin: top;
+    transition: transform 0.5s var(--ease-out) calc(var(--i) * 120ms + 150ms);
+  }
+
+  @container (min-width: 24rem) {
+    .gp {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem 1.75rem;
+    }
+
+    .gp__step:not(:last-child)::after {
+      left: 100%;
+      top: 50%;
+      width: 1.75rem;
+      height: 1px;
+      transform-origin: left;
+    }
+  }
+
+  :global(.has-motion) .gp:not(:global(.is-in)) .gp__step::after {
+    transform: scale(0);
+  }
+
+  /* Text is never dimmed before reveal: only the connectors wait. */
+</style>

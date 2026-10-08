@@ -1,0 +1,310 @@
+---
+import { engagement } from '../../content/site';
+import SectionHead from '../SectionHead.astro';
+import CTAButton from '../CTAButton.astro';
+import LayerStack from '../shapes/LayerStack.astro';
+---
+
+<section class="section" id="engagement" aria-labelledby="engagement-title">
+  <div class="container">
+    <SectionHead num="05" eyebrow={engagement.eyebrow} heading={engagement.heading} id="engagement-title">
+      <p class="lede">{engagement.intro}</p>
+    </SectionHead>
+
+    <ol class="phases" role="list" data-scrub>
+      {
+        engagement.phases.map((ph, i) => (
+          <li class="phase stack-host" style={`--k:${i}`}>
+            <span class="phase__node" aria-hidden="true" />
+            <div class="phase__visual">
+              <LayerStack layers={i + 1} gate={i >= 1} flow={i === 2} accentTop={i === 2} />
+            </div>
+            <p class="phase__num">Phase {ph.n}</p>
+            <h3 class="phase__name">{ph.name}</h3>
+            <p class="phase__body">{ph.body}</p>
+            <h4 class="phase__sub">{engagement.outputsLabel}</h4>
+            <ul class="phase__outputs" role="list">
+              {ph.outputs.map((o) => (
+                <li>{o}</li>
+              ))}
+            </ul>
+            <p class="phase__removes">
+              <span>{engagement.removesLabel}</span>
+              {ph.removes}
+            </p>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="caps">
+      <h3 class="caps__title">{engagement.capabilitiesTitle}</h3>
+      <div class="caps__grid">
+        {
+          engagement.capabilities.map((c) => (
+            <div class="caps__col">
+              <h4>{c.title}</h4>
+              <ul role="list">
+                {c.items.map((it) => (
+                  <li>{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+
+    <div class="eng__cta">
+      <p>{engagement.ctaLead}</p>
+      <CTAButton />
+    </div>
+  </div>
+</section>
+
+<style>
+  /* ----- the phased rail ----- */
+
+  .phases {
+    --p: 1;
+    position: relative;
+    display: grid;
+    gap: var(--space-6);
+    margin: 0;
+    padding: 0 0 0 2rem;
+  }
+
+  /* Rail: a track, and a fill that advances with scroll. */
+  .phases::before,
+  .phases::after {
+    content: '';
+    position: absolute;
+    left: 0.45rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    border-radius: 1px;
+  }
+
+  .phases::before {
+    background: var(--rule);
+  }
+
+  .phases::after {
+    background: var(--forest-900);
+    transform-origin: top;
+    transform: scaleY(var(--p));
+  }
+
+  .phase {
+    /* Each phase lights up as the rail reaches it. */
+    --on: clamp(0, (var(--p) - var(--k) * 0.3) * 5, 1);
+    position: relative;
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding: clamp(1.4rem, 1rem + 1.4vw, 2rem);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-l);
+    background: var(--white);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.4s var(--ease-out);
+  }
+
+  .phase:hover,
+  .phase:focus-within {
+    border-color: var(--rule-strong);
+    box-shadow: var(--shadow-frame);
+  }
+
+  .phase__node {
+    position: absolute;
+    left: calc(-2rem + 0.45rem - 6px);
+    top: 2rem;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid var(--forest-900);
+    background: var(--paper);
+  }
+
+  .phase__node::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: var(--forest-900);
+    transform: scale(var(--on));
+  }
+
+  /* Same scale for every stack, sat on a common baseline. */
+  .phase__visual {
+    display: flex;
+    align-items: flex-end;
+    width: 11rem;
+    margin-bottom: var(--space-2);
+    opacity: calc(0.35 + 0.65 * var(--on));
+    transform: translateY(calc((1 - var(--on)) * 12px));
+  }
+
+  .phase__visual :global(.ls) {
+    width: 100%;
+  }
+
+  .phase__num {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  .phase__name {
+    font-size: var(--step-2);
+  }
+
+  .phase__body {
+    color: var(--ink-muted);
+  }
+
+  .phase__sub {
+    margin-top: var(--space-2);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+
+  .phase__outputs {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+  }
+
+  .phase__outputs li {
+    position: relative;
+    padding-left: 1.1rem;
+    font-size: 0.9375rem;
+  }
+
+  .phase__outputs li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.6em;
+    width: 8px;
+    height: 2px;
+    background: var(--olive-600);
+  }
+
+  .phase__removes {
+    margin-top: auto;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--rule);
+    font-size: 0.9375rem;
+  }
+
+  .phase__removes span {
+    display: block;
+    margin-bottom: 0.15rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  @media (min-width: 64rem) {
+    .phases {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: var(--space-5);
+      padding: 2.25rem 0 0;
+    }
+
+    .phases::before,
+    .phases::after {
+      left: 0.5rem;
+      right: 0.5rem;
+      top: 0;
+      bottom: auto;
+      width: auto;
+      height: 2px;
+    }
+
+    .phases::after {
+      transform-origin: left;
+      transform: scaleX(var(--p));
+    }
+
+    .phase {
+      grid-template-rows: auto auto auto auto auto auto 1fr;
+    }
+
+    .phase__visual {
+      width: 12rem;
+      height: 12.5rem;
+    }
+
+    .phase__node {
+      left: 1.5rem;
+      top: calc(-2.25rem - 6px);
+    }
+  }
+
+  /* ----- capabilities ----- */
+
+  .caps {
+    display: grid;
+    gap: var(--space-6);
+    margin-top: clamp(4rem, 3rem + 4vw, 6rem);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .caps__title {
+    font-size: var(--step-2);
+  }
+
+  .caps__grid {
+    display: grid;
+    gap: var(--space-6) var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+
+  .caps__col h4 {
+    margin-bottom: var(--space-3);
+    font-size: 1.15rem;
+  }
+
+  .caps__col ul {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .caps__col li {
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+
+  .eng__cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+    margin-top: clamp(3rem, 2rem + 3vw, 4.5rem);
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    border-radius: var(--radius-l);
+    background: var(--moss-100);
+  }
+
+  .eng__cta p {
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    line-height: 1.25;
+  }
+</style>

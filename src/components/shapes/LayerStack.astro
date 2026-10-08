@@ -1,0 +1,224 @@
+---
+/**
+ * Infrastructure and compute. Isometric slabs stacked like data halls, with
+ * rack lines on each floor. Layers drop into place when the stack scrolls into
+ * view, and spread apart when a parent card marked .stack-host is hovered or
+ * focused. Optional extras: a gate on the top floor and a flow line threading
+ * every floor. Decorative only.
+ */
+interface Props {
+  layers: number;
+  /** Bottom to top. Drawn as side labels; keep them short. */
+  labels?: string[];
+  gate?: boolean;
+  flow?: boolean;
+  /** Darken the top floor to mark it as the governing layer. */
+  accentTop?: boolean;
+  class?: string;
+}
+const { layers, labels, gate = false, flow = false, accentTop = false, class: className } = Astro.props;
+
+const HW = 100; // half width of a floor
+const HH = 50; // half height of a floor
+const T = 12; // slab thickness
+const GAP = 32;
+const CX = 120;
+const TOP = gate ? 40 : 24;
+const width = labels ? 400 : 240;
+const height = TOP + (layers - 1) * GAP + HH * 2 + T + (flow ? 34 : 14);
+
+const floors = Array.from({ length: layers }, (_, i) => {
+  const y = TOP + (layers - 1 - i) * GAP;
+  const top = `${CX},${y} ${CX + HW},${y + HH} ${CX},${y + HH * 2} ${CX - HW},${y + HH}`;
+  const left = `${CX - HW},${y + HH} ${CX},${y + HH * 2} ${CX},${y + HH * 2 + T} ${CX - HW},${y + HH + T}`;
+  const right = `${CX},${y + HH * 2} ${CX + HW},${y + HH} ${CX + HW},${y + HH + T} ${CX},${y + HH * 2 + T}`;
+  // Rack rows: lines parallel to the back-right edge.
+  const racks = [1, 2, 3, 4].map((k) => {
+    const f = k / 5;
+    return {
+      x1: CX - HW + HW * f,
+      y1: y + HH - HH * f,
+      x2: CX + HW * f,
+      y2: y + HH * 2 - HH * f,
+    };
+  });
+  return { i, y, top, left, right, racks, accent: accentTop && i === layers - 1 };
+});
+
+const topY = floors[layers - 1]!.y;
+const bottomY = floors[0]!.y;
+---
+
+<div class:list={['ls', 'shape', className]} data-reveal>
+  <svg viewBox={`0 0 ${width} ${height}`} aria-hidden="true" focusable="false">
+    {
+      flow && (
+        <line
+          class="ls-flow"
+          x1={CX}
+          y1={topY - 22}
+          x2={CX}
+          y2={bottomY + HH * 2 + T + 26}
+        />
+      )
+    }
+    {
+      floors.map((f) => (
+        <g class:list={['ls-layer', f.accent && 'ls-layer--accent']} style={`--i:${f.i}`}>
+          <polygon class="ls-left" points={f.left} />
+          <polygon class="ls-right" points={f.right} />
+          <polygon class="ls-top" points={f.top} />
+          {f.racks.map((r) => (
+            <line class="ls-rack" x1={r.x1} y1={r.y1} x2={r.x2} y2={r.y2} />
+          ))}
+          {labels?.[f.i] && (
+            <g class="ls-label">
+              <line x1={CX + HW + 6} y1={f.y + HH + 6} x2={CX + HW + 34} y2={f.y + HH + 6} />
+              <text x={CX + HW + 42} y={f.y + HH + 10}>
+                {labels[f.i]}
+              </text>
+            </g>
+          )}
+        </g>
+      ))
+    }
+    {
+      gate && (
+        <g class:list={['ls-gate', accentTop && 'ls-gate--accent']} style={`--i:${layers}`}>
+          <line x1={CX - 22} y1={topY + HH + 12} x2={CX - 22} y2={topY + HH - 18} />
+          <line x1={CX + 22} y1={topY + HH - 10} x2={CX + 22} y2={topY + HH - 40} />
+          <line x1={CX - 22} y1={topY + HH - 16} x2={CX + 22} y2={topY + HH - 38} class="ls-gate-bar" />
+        </g>
+      )
+    }
+    {flow && <circle class="ls-flow-dot" cx={CX} cy={topY - 22} r="4" />}
+  </svg>
+</div>
+
+<style>
+  .ls svg {
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ls-layer,
+  .ls-gate {
+    transition: transform 0.6s var(--ease-out);
+  }
+
+  .ls-top {
+    fill: var(--moss-100);
+    stroke: var(--forest-700);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .ls-left {
+    fill: var(--sage-200);
+    stroke: var(--forest-700);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .ls-right {
+    fill: var(--sage-300);
+    stroke: var(--forest-700);
+    stroke-width: 1;
+    stroke-linejoin: round;
+  }
+
+  .ls-rack {
+    stroke: var(--olive-400);
+    stroke-width: 1;
+    opacity: 0.7;
+  }
+
+  .ls-layer--accent .ls-top {
+    fill: var(--forest-900);
+  }
+
+  .ls-layer--accent .ls-left {
+    fill: var(--forest-700);
+  }
+
+  .ls-layer--accent .ls-right {
+    fill: var(--forest-950);
+  }
+
+  .ls-layer--accent .ls-rack {
+    stroke: var(--lime-200);
+    opacity: 0.55;
+  }
+
+  .ls-label line {
+    stroke: var(--rule-strong);
+    stroke-width: 1;
+  }
+
+  .ls-label text {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--ink-muted);
+  }
+
+  .ls-gate line {
+    stroke: var(--forest-900);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+  }
+
+  .ls-gate .ls-gate-bar {
+    stroke: var(--olive-600);
+  }
+
+  .ls-gate--accent line,
+  .ls-gate--accent .ls-gate-bar {
+    stroke: var(--lime-200);
+  }
+
+  .ls-flow {
+    stroke: var(--olive-600);
+    stroke-width: 1.5;
+    stroke-dasharray: 3 5;
+  }
+
+  .ls-flow-dot {
+    fill: var(--forest-900);
+  }
+
+  /* Exploded view while a host card is hovered or focused. */
+  :global(.stack-host:hover) .ls-layer,
+  :global(.stack-host:focus-within) .ls-layer {
+    transform: translateY(calc(var(--i) * -9px));
+  }
+
+  :global(.stack-host:hover) .ls-gate,
+  :global(.stack-host:focus-within) .ls-gate {
+    transform: translateY(calc(var(--i) * -9px - 6px));
+  }
+
+  /* Floors drop in once the stack is on screen. */
+  :global(.has-motion) .ls:not(:global(.is-in)) .ls-layer,
+  :global(.has-motion) .ls:not(:global(.is-in)) .ls-gate {
+    opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.has-motion) .ls:global(.is-in) .ls-layer,
+    :global(.has-motion) .ls:global(.is-in) .ls-gate {
+      animation: ls-drop 1s var(--ease-out) backwards;
+      animation-delay: calc(var(--i) * 150ms + 100ms);
+    }
+  }
+
+  @keyframes ls-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-44px);
+    }
+  }
+</style>

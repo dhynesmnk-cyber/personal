@@ -1,0 +1,342 @@
+---
+/**
+ * The acquisition analysis engine, drawn as real markup: an ordered list of
+ * stages, an evaluation gate with its human-review loop, and the guardrails
+ * that apply throughout. Stages light up in sequence when scrolled into view.
+ */
+interface Stage {
+  name: string;
+  body: string;
+  gate?: boolean;
+}
+interface Props {
+  title: string;
+  caption: string;
+  stages: Stage[];
+  fallback: { name: string; body: string };
+  guardrailsTitle: string;
+  guardrails: string[];
+}
+const { title, caption, stages, fallback, guardrailsTitle, guardrails } = Astro.props;
+const gateIndex = stages.findIndex((s) => s.gate);
+---
+
+<figure class="arch" data-reveal style={`--cols:${stages.length};--gate-col:${gateIndex + 1}`}>
+  <figcaption class="arch__head">
+    <span class="arch__title">{title}</span>
+    <span class="arch__caption">{caption}</span>
+  </figcaption>
+
+  <ol class="arch__stages" role="list">
+    {
+      stages.map((s, i) => (
+        <li class:list={['arch__stage', s.gate && 'arch__stage--gate']} style={`--i:${i}`}>
+          <span class="arch__num" aria-hidden="true">
+            {String(i + 1).padStart(2, '0')}
+            {s.gate && (
+              <span class="arch__posts">
+                <span />
+                <span />
+              </span>
+            )}
+          </span>
+          <strong class="arch__name">{s.name}</strong>
+          <span class="arch__body">{s.body}</span>
+          {s.gate && (
+            <span class="visually-hidden">
+              {' '}
+              If a check fails: {fallback.name}. {fallback.body}
+            </span>
+          )}
+        </li>
+      ))
+    }
+  </ol>
+
+  <div class="arch__under" aria-hidden="true">
+    <div class="arch__branch">
+      <svg class="arch__loop-lines" viewBox="0 0 80 56" focusable="false">
+        <path d="M28 2 V48" />
+        <path d="M22 42 L28 50 L34 42" />
+        <path d="M52 54 V8" />
+        <path d="M46 14 L52 6 L58 14" />
+      </svg>
+      <span class="arch__loop-tags"><span>fail</span><span>re-check</span></span>
+      <div class="arch__loop">
+        <strong>{fallback.name}</strong>
+        <span>{fallback.body}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch__guard">
+    <p class="arch__guard-title">{guardrailsTitle}</p>
+    <ul class="arch__chips" role="list">
+      {guardrails.map((g) => <li class="chip">{g}</li>)}
+    </ul>
+  </div>
+</figure>
+
+<style>
+  .arch {
+    margin: 0;
+    padding: clamp(1.25rem, 0.75rem + 2vw, 2.25rem);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-l);
+    background: var(--white);
+    box-shadow: var(--shadow-frame);
+  }
+
+  .arch__head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .arch__title {
+    font-family: var(--font-serif);
+    font-size: var(--step-1);
+    font-weight: 450;
+  }
+
+  .arch__caption {
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+
+  .arch__stages {
+    display: grid;
+    gap: 1.5rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .arch__stage {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.4rem;
+    padding: 1rem 1.1rem 1.15rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-m);
+    background: var(--paper);
+    transition: border-color 0.5s ease calc(var(--i) * 160ms);
+  }
+
+  /* Accent bar that sweeps in on reveal. */
+  .arch__stage::before {
+    content: '';
+    position: absolute;
+    inset: -1px -1px auto;
+    height: 3px;
+    border-radius: var(--radius-m) var(--radius-m) 0 0;
+    background: var(--olive-600);
+    transform-origin: left;
+    transition: transform 0.6s var(--ease-out) calc(var(--i) * 160ms);
+  }
+
+  /* Connector to the next stage (vertical on small screens). */
+  .arch__stage:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 1.6rem;
+    top: 100%;
+    width: 1px;
+    height: 1.5rem;
+    background: var(--forest-700);
+    transform-origin: top;
+    transition: transform 0.45s var(--ease-out) calc(var(--i) * 160ms + 220ms);
+  }
+
+  .arch__stage--gate {
+    border-color: var(--forest-900);
+    background: var(--forest-900);
+    color: var(--paper);
+  }
+
+  .arch__stage--gate::before {
+    background: var(--lime-200);
+  }
+
+  .arch__num {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--olive-700);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .arch__stage--gate .arch__num {
+    color: var(--lime-200);
+  }
+
+  .arch__posts {
+    display: inline-flex;
+    gap: 4px;
+  }
+
+  .arch__posts span {
+    width: 2px;
+    height: 0.9rem;
+    border-radius: 1px;
+    background: var(--lime-200);
+    transition: transform 0.6s var(--ease-out) 0.7s;
+  }
+
+  .arch__name {
+    font-family: var(--font-serif);
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.2;
+  }
+
+  .arch__body {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--ink-muted);
+  }
+
+  .arch__stage--gate .arch__body {
+    color: var(--sage-200);
+  }
+
+  /* Human-review loop under the gate. */
+  .arch__under {
+    margin-top: 0.25rem;
+    padding-left: 2.5rem;
+  }
+
+  .arch__branch {
+    position: relative;
+    display: grid;
+    justify-items: start;
+  }
+
+  .arch__loop-lines {
+    width: 80px;
+    height: 56px;
+    fill: none;
+    stroke: var(--forest-700);
+    stroke-width: 1.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .arch__loop-lines path:nth-child(n + 3) {
+    stroke: var(--olive-600);
+    stroke-dasharray: 3 4;
+  }
+
+  .arch__loop-tags {
+    position: absolute;
+    top: 1.1rem;
+    left: 5.25rem;
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+
+  .arch__loop {
+    display: grid;
+    gap: 0.25rem;
+    max-width: 22rem;
+    padding: 0.85rem 1rem;
+    border: 1px dashed var(--rule-strong);
+    border-radius: var(--radius-m);
+    background: var(--moss-100);
+    font-size: 0.9rem;
+    line-height: 1.45;
+    color: var(--ink-muted);
+  }
+
+  .arch__loop strong {
+    color: var(--ink);
+    font-size: 0.95rem;
+  }
+
+  .arch__guard {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1.25rem;
+    margin-top: 1.75rem;
+    padding: 1rem 1.15rem;
+    border-radius: var(--radius-m);
+    background: var(--paper-2);
+    border-top: 2px solid var(--forest-900);
+  }
+
+  .arch__guard-title {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--forest-900);
+  }
+
+  .arch__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .arch__chips .chip {
+    color: var(--ink);
+  }
+
+  /* Wide screens: one row of stages, the review loop under the gate. */
+  @media (min-width: 64rem) {
+    .arch__stages {
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      gap: 1.75rem;
+    }
+
+    .arch__stage:not(:last-child)::after {
+      left: 100%;
+      top: 2.1rem;
+      width: 1.75rem;
+      height: 1px;
+      transform-origin: left;
+    }
+
+    .arch__under {
+      display: grid;
+      grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+      gap: 1.75rem;
+      padding-left: 0;
+    }
+
+    .arch__branch {
+      grid-column: var(--gate-col) / span 2;
+      margin-left: 0.25rem;
+    }
+  }
+
+  /* ----- reveal ----- */
+
+  :global(.has-motion) .arch:not(:global(.is-in)) .arch__stage::before,
+  :global(.has-motion) .arch:not(:global(.is-in)) .arch__stage::after {
+    transform: scale(0);
+  }
+
+  :global(.has-motion) .arch:not(:global(.is-in)) .arch__posts span:first-child {
+    transform: translateX(3px);
+  }
+
+  :global(.has-motion) .arch:not(:global(.is-in)) .arch__posts span:last-child {
+    transform: translateX(-3px);
+  }
+</style>

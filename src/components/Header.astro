@@ -1,0 +1,95 @@
+---
+import { meta, nav } from '../content/site';
+import CTAButton from './CTAButton.astro';
+import Mark from './Mark.astro';
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="wordmark" href="#top">
+      <Mark />
+      <span>{meta.name}</span>
+    </a>
+    <nav class="site-nav" aria-label="Sections">
+      <ul role="list">
+        {
+          nav.map((item) => (
+            <li>
+              <a href={item.href}>{item.label}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <CTAButton size="small" label="Book a call" />
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--paper);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .site-header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    min-height: var(--header-h);
+  }
+
+  .wordmark {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 480;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .site-nav {
+    display: none;
+    margin-left: auto;
+  }
+
+  .site-nav ul {
+    display: flex;
+    gap: clamp(1rem, 0.5rem + 1.2vw, 2rem);
+  }
+
+  .site-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--ink-muted);
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 calc(100% - 10px);
+    transition:
+      color var(--dur-fast) ease,
+      background-size var(--dur-med) var(--ease-out);
+  }
+
+  .site-nav a:hover {
+    color: var(--ink);
+    background-size: 100% 1px;
+  }
+
+  @media (min-width: 60rem) {
+    .site-nav {
+      display: block;
+    }
+  }
+</style>
