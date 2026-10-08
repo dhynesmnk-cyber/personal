@@ -1,0 +1,36 @@
+{
+  "name": "davidhynes-advisory",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "David Hynes: AI strategy, evaluation design and adoption. Single-page advisory site.",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "serve": "node scripts/serve.mjs",
+    "check": "astro check && node scripts/check-copy.mjs",
+    "budget": "node scripts/check-budget.mjs",
+    "test": "playwright test",
+    "verify": "npm run check && npm run build && npm run budget && npm test",
+    "capture": "node scripts/capture-screenshots.mjs",
+    "og": "node scripts/og-image.mjs"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "dependencies": {
+    "astro": "7.3.7",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@axe-core/playwright": "4.11.0",
+    "@fontsource-variable/inter": "5.2.8",
+    "@fontsource-variable/newsreader": "5.2.8",
+    "@playwright/test": "1.56.1",
+    "@types/node": "22.18.8",
+    "playwright-core": "1.56.1",
+    "typescript": "5.9.3"
+  }
+}

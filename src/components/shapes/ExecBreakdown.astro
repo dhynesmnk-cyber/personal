@@ -1,0 +1,284 @@
+---
+/**
+ * An illustrative mockup of the engine's output: a structured executive
+ * breakdown with every client detail redacted. The visual itself is hidden
+ * from assistive tech; the figcaption and a short text summary carry it.
+ */
+interface Props {
+  title: string;
+  caption: string;
+  sections: string[];
+  chips: string[];
+}
+const { title, caption, sections, chips } = Astro.props;
+// Redaction line widths per section, as percentages. Fixed so builds are stable.
+const lines = [
+  [92, 78, 64],
+  [86, 70],
+  [94, 82, 58],
+  [74, 66],
+];
+---
+
+<figure class="doc" data-reveal>
+  <div class="doc__stage" aria-hidden="true">
+    <div class="doc__sheet doc__sheet--back"></div>
+    <div class="doc__sheet">
+      <div class="doc__top">
+        <span class="doc__kicker">{title}</span>
+        <span class="doc__ref"><i style="--w:56px"></i></span>
+      </div>
+      <div class="doc__title"><span>Target</span><i style="--w:42%"></i></div>
+      <div class="doc__chips">
+        {
+          chips.map((c) => (
+            <span class="doc__chip">
+              <svg viewBox="0 0 12 12" width="12" height="12">
+                <path d="M2.5 6.5 5 9l4.5-6" />
+              </svg>
+              {c}
+            </span>
+          ))
+        }
+      </div>
+      <div class="doc__cols">
+        <div class="doc__main">
+          {
+            sections.map((s, i) => (
+              <div class="doc__section" style={`--i:${i}`}>
+                <span class="doc__h">{s}</span>
+                {(lines[i] ?? [80, 60]).map((w) => (
+                  <i style={`--w:${w}%`} />
+                ))}
+              </div>
+            ))
+          }
+        </div>
+        <div class="doc__side">
+          <span class="doc__h">Evidence</span>
+          {
+            [1, 2, 3, 4, 5].map((n) => (
+              <span class="doc__src">
+                <b>[{n}]</b>
+                <i style={`--w:${50 + ((n * 37) % 45)}%`} />
+              </span>
+            ))
+          }
+          <span class="doc__h doc__h--gap">Risk weighting</span>
+          <span class="doc__bars">
+            <i style="--h:80%"></i>
+            <i style="--h:46%"></i>
+            <i style="--h:62%"></i>
+            <i style="--h:30%"></i>
+          </span>
+        </div>
+      </div>
+      <div class="doc__foot">
+        <span>Prepared for project lead review</span>
+        <i style="--w:80px"></i>
+      </div>
+    </div>
+  </div>
+  <figcaption class="doc__caption">
+    {caption}
+    <span class="visually-hidden">
+      It shows sections for {sections.join(', ')}, an evidence panel citing numbered sources, and status
+      markers: {chips.join('; ')}.
+    </span>
+  </figcaption>
+</figure>
+
+<style>
+  .doc {
+    margin: 0;
+  }
+
+  .doc__stage {
+    position: relative;
+  }
+
+  .doc__sheet {
+    position: relative;
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1.1rem, 0.8rem + 1.4vw, 1.75rem);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-m);
+    background: var(--white);
+    box-shadow: var(--shadow-frame);
+    font-size: 0.8125rem;
+    transition: transform 0.9s var(--ease-out);
+  }
+
+  .doc__sheet--back {
+    position: absolute;
+    inset: 0 0 0.75rem 0.75rem;
+    background: var(--paper-3);
+    border-color: var(--rule);
+    box-shadow: none;
+  }
+
+  .doc__sheet:not(.doc__sheet--back) {
+    margin: 0.75rem 0.75rem 0 0;
+  }
+
+  .doc i {
+    display: block;
+    width: var(--w, 60%);
+    height: 0.55rem;
+    border-radius: 2px;
+    background: var(--sage-200);
+  }
+
+  .doc__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .doc__kicker {
+    font-size: 0.6875rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  .doc__title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-serif);
+    font-size: 1.5rem;
+    line-height: 1.1;
+  }
+
+  .doc__title i {
+    height: 1.1rem;
+    background: var(--ink);
+  }
+
+  .doc__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .doc__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.2rem 0.55rem;
+    border-radius: 999px;
+    background: var(--moss-100);
+    color: var(--forest-900);
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .doc__chip svg {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .doc__cols {
+    display: grid;
+    gap: 1.25rem;
+    grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--rule);
+  }
+
+  .doc__main,
+  .doc__side {
+    display: grid;
+    align-content: start;
+    gap: 0.45rem;
+    padding-top: 0.75rem;
+  }
+
+  .doc__section {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .doc__h {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .doc__h--gap {
+    margin-top: 0.5rem;
+  }
+
+  .doc__side {
+    padding-left: 1rem;
+    border-left: 1px solid var(--rule);
+  }
+
+  .doc__src {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.6875rem;
+    color: var(--olive-700);
+  }
+
+  .doc__src i {
+    height: 0.45rem;
+  }
+
+  .doc__bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.35rem;
+    height: 3rem;
+  }
+
+  .doc__bars i {
+    width: 0.9rem;
+    height: var(--h);
+    background: var(--olive-400);
+    border-radius: 2px 2px 0 0;
+    transform-origin: bottom;
+    transition: transform 0.8s var(--ease-out) 0.5s;
+  }
+
+  .doc__bars i:first-child {
+    background: var(--forest-900);
+  }
+
+  .doc__foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--rule);
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+  }
+
+  .doc__foot i {
+    background: var(--forest-700);
+    height: 2px;
+  }
+
+  .doc__caption {
+    margin-top: 0.85rem;
+    font-size: var(--step--1);
+    color: var(--ink-muted);
+  }
+
+  :global(.has-motion) .doc:not(:global(.is-in)) .doc__bars i {
+    transform: scaleY(0);
+  }
+
+  :global(.has-motion) .doc:not(:global(.is-in)) .doc__sheet:not(.doc__sheet--back) {
+    transform: translateY(14px);
+  }
+</style>

@@ -1,0 +1,106 @@
+---
+import { BOOKING_IS_EMAIL, CONTACT_EMAIL, finalCta, hero } from '../../content/site';
+import CTAButton from '../CTAButton.astro';
+import BridgeField from '../shapes/BridgeField.astro';
+---
+
+<section class="section section--dark on-dark final" id="contact" aria-labelledby="final-title">
+  <div class="container final__grid">
+    <div class="final__copy">
+      <h2 id="final-title">{finalCta.heading}</h2>
+      <p class="final__body">{finalCta.body}</p>
+      <div class="final__actions">
+        <CTAButton tone="light" />
+      </div>
+      {
+        BOOKING_IS_EMAIL && (
+          <p class="final__note">
+            {finalCta.emailNote} <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          </p>
+        )
+      }
+    </div>
+    <div class="final__visual">
+      <BridgeField mode="settled" labels={hero.zones} />
+    </div>
+  </div>
+</section>
+
+<style>
+  .final {
+    background: var(--forest-900);
+    color: var(--paper);
+    overflow: hidden;
+  }
+
+  .final__grid {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 4rem);
+    align-items: center;
+  }
+
+  .final__copy {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+
+  .final h2 {
+    max-width: 16ch;
+    font-size: var(--step-4);
+    line-height: 1.04;
+  }
+
+  .final__body {
+    max-width: 34rem;
+    font-size: var(--step-1);
+    line-height: 1.55;
+    color: var(--sage-200);
+  }
+
+  .final__actions {
+    margin-top: var(--space-2);
+  }
+
+  .final__note {
+    font-size: 0.9375rem;
+    color: var(--sage-200);
+  }
+
+  .final__note a {
+    color: var(--paper);
+    text-decoration: underline;
+    text-decoration-color: var(--olive-400);
+    text-underline-offset: 0.25em;
+    overflow-wrap: anywhere;
+  }
+
+  .final__note a:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* Re-tint the bridge for the dark band. */
+  .final__visual {
+    --paper: var(--forest-950);
+    --paper-3: #2a4636;
+    --moss-100: #24402f;
+    --rule-strong: #4b6a55;
+    --sage-200: #3a5a46;
+    --sage-300: #5d7a63;
+    --forest-700: var(--lime-200);
+    --forest-900: var(--lime-200);
+    --ink-muted: var(--sage-200);
+    color: #c9d4bd;
+    opacity: 0.95;
+  }
+
+  .final__visual :global(.bridge__labels) {
+    color: #b8c6aa;
+  }
+
+  @media (min-width: 64rem) {
+    .final__grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+  }
+</style>

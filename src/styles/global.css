@@ -1,0 +1,318 @@
+/* ---------------------------------------------------------------- reset */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+* {
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+  /* Keeps focused and anchored content clear of the sticky header (WCAG 2.4.11). */
+  scroll-padding-top: calc(var(--header-h) + 1.25rem);
+}
+
+body {
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--step-0);
+  line-height: 1.6;
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  overflow-x: clip;
+}
+
+img,
+svg,
+picture {
+  display: block;
+  max-width: 100%;
+}
+
+img {
+  height: auto;
+}
+
+ul[role='list'],
+ol[role='list'] {
+  list-style: none;
+  padding: 0;
+}
+
+a {
+  color: inherit;
+}
+
+::selection {
+  background: var(--lime-200);
+  color: var(--ink);
+}
+
+/* ------------------------------------------------------------ typography */
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-serif);
+  font-weight: 420;
+  line-height: 1.08;
+  letter-spacing: -0.018em;
+  text-wrap: balance;
+  font-optical-sizing: auto;
+}
+
+h1 {
+  font-size: var(--step-4);
+  line-height: 1.02;
+  letter-spacing: -0.026em;
+}
+
+h2 {
+  font-size: var(--step-3);
+}
+
+h3 {
+  font-size: var(--step-2);
+  line-height: 1.18;
+}
+
+h4 {
+  font-size: var(--step-1);
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+.lede {
+  font-size: var(--step-1);
+  line-height: 1.55;
+  color: var(--ink-muted);
+  max-width: 40rem;
+}
+
+.prose > * + * {
+  margin-top: 1.1em;
+}
+
+.prose p {
+  max-width: 38rem;
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+
+.eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-family: var(--font-sans);
+  font-size: var(--step--1);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--olive-700);
+}
+
+.eyebrow__num {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-muted);
+  letter-spacing: 0.08em;
+}
+
+.eyebrow__bar {
+  width: 2rem;
+  height: 1px;
+  background: currentColor;
+  opacity: 0.6;
+}
+
+.label {
+  font-size: var(--step--1);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--olive-700);
+}
+
+/* ---------------------------------------------------------------- layout */
+
+.container {
+  width: min(100% - 2 * var(--gutter), var(--max));
+  margin-inline: auto;
+}
+
+.section {
+  position: relative;
+  padding-block: var(--section-pad);
+}
+
+.section--alt {
+  background: var(--paper-2);
+}
+
+.section + .section:not(.section--alt):not(.section--dark) {
+  border-top: 1px solid var(--rule);
+}
+
+.section-head {
+  display: grid;
+  gap: var(--space-5);
+  max-width: 50rem;
+  margin-bottom: clamp(2.5rem, 2rem + 3vw, 4.5rem);
+}
+
+/* ---------------------------------------------------------------- links */
+
+.text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 24px;
+  font-weight: 600;
+  color: var(--forest-900);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: var(--rule-strong);
+  transition: text-decoration-color var(--dur-fast) ease, color var(--dur-fast) ease;
+}
+
+.text-link:hover {
+  text-decoration-color: currentColor;
+  color: var(--forest-700);
+}
+
+.text-link .arrow {
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.text-link:hover .arrow {
+  transform: translateX(3px);
+}
+
+/* ---------------------------------------------------------------- focus */
+
+:focus-visible {
+  outline: 3px solid var(--forest-900);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+.on-dark :focus-visible {
+  outline-color: var(--lime-200);
+}
+
+.skip-link {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.75rem 1rem;
+  background: var(--forest-900);
+  color: var(--paper);
+  font-weight: 600;
+  border-radius: var(--radius-s);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus {
+  transform: none;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* ---------------------------------------------------------- shared bits */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.7rem;
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  background: var(--white);
+  font-size: var(--step--1);
+  line-height: 1.3;
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.stat {
+  font-family: var(--font-serif);
+  font-size: var(--step-stat);
+  font-weight: 360;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  color: var(--forest-900);
+  font-variant-numeric: lining-nums;
+}
+
+.rule {
+  height: 1px;
+  border: 0;
+  background: var(--rule);
+}
+
+/* Decorative shapes never take part in interaction or reading order. */
+.shape {
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ------------------------------------------------------- motion policy */
+
+/*
+ * Motion is opt-in. Without JavaScript, or with reduced motion requested,
+ * everything renders in its final, connected state. Pre-reveal states only
+ * apply under .has-motion, which src/scripts/motion.ts adds.
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Windows High Contrast and other forced-colour modes. */
+@media (forced-colors: active) {
+  .shape {
+    forced-color-adjust: none;
+    opacity: 0.6;
+  }
+
+  .btn {
+    border: 2px solid ButtonText;
+  }
+}

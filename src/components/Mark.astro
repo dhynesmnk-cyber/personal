@@ -1,0 +1,14 @@
+---
+/** The wordmark glyph: a loose node bridged to an ordered bar. Decorative. */
+interface Props {
+  size?: number;
+}
+const { size = 26 } = Astro.props;
+---
+
+<svg class="mark" width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false">
+  <circle cx="7" cy="9" r="3" fill="var(--olive-400)"></circle>
+  <circle cx="5" cy="20" r="2.2" fill="var(--olive-600)"></circle>
+  <path d="M8 10 C 15 10, 15 16, 21 16 M7 20 C 14 20, 15 16, 21 16" fill="none" stroke="var(--forest-700)" stroke-width="1.4" stroke-linecap="round"></path>
+  <rect x="20" y="13" width="10" height="6" rx="3" fill="var(--forest-900)"></rect>
+</svg>
