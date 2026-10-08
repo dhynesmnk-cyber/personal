@@ -1,0 +1,228 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHead from '../components/SectionHead.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Arrow from '../components/Arrow.astro';
+import LayerStack from '../components/shapes/LayerStack.astro';
+import { LINKS } from '../content/brand';
+import { insights } from '../content/insights';
+
+const { submission, research, matters } = insights;
+---
+
+<Base title={insights.title} description={insights.description}>
+  <PageHero eyebrow={insights.hero.eyebrow} heading={insights.hero.heading} lede={insights.hero.lede} />
+
+  <section class="section" aria-labelledby="submission-title">
+    <div class="container split">
+      <div class="split__copy">
+        <SectionHead eyebrow={submission.eyebrow} heading={submission.heading} id="submission-title" />
+        <div class="prose">
+          {submission.paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+        <dl class="record">
+          {
+            submission.record.map((r) => (
+              <div class="record__row">
+                <dt>{r.label}</dt>
+                <dd>{r.detail}</dd>
+              </div>
+            ))
+          }
+        </dl>
+        {
+          LINKS.submission && (
+            <a class="text-link" href={LINKS.submission}>
+              {submission.linkLabel}
+              <Arrow direction="up-right" />
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="research-title">
+    <div class="container split split--visual">
+      <div class="split__copy">
+        <SectionHead eyebrow={research.eyebrow} heading={research.heading} id="research-title" />
+        <div class="prose">
+          {research.paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+        <p class="muted release">{research.release}</p>
+        <p class="links">
+          <a class="text-link" href={research.links.project.href}>{research.links.project.label}<Arrow /></a>
+          <a class="text-link" href={research.links.repo.href}>{research.links.repo.label}<Arrow direction="up-right" /></a>
+        </p>
+      </div>
+      <div class="split__visual">
+        <LayerStack layers={4} labels={research.stackLabels} gate accentTop />
+        <ul class="stats" role="list">
+          {
+            research.stats.map((s) => (
+              <li>
+                <span class="stats__value">{s.value}</span>
+                <span class="stats__label">{s.label}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="matters-title">
+    <div class="container narrow">
+      <SectionHead eyebrow={matters.eyebrow} heading={matters.heading} id="matters-title" />
+      <div class="prose">
+        {matters.paragraphs.map((p) => <p>{p}</p>)}
+      </div>
+    </div>
+  </section>
+
+  {
+    insights.articles.length > 0 && (
+      <section class="section section--alt" aria-labelledby="articles-title">
+        <div class="container">
+          <h2 id="articles-title">{insights.articlesHeading}</h2>
+          <ul class="articles" role="list">
+            {insights.articles.map((a) => (
+              <li>
+                <a href={a.href}>{a.title}</a>
+                <p>{a.summary}</p>
+                <p class="muted">{a.date}</p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <CtaBand />
+</Base>
+
+<style>
+  .split {
+    display: grid;
+    gap: clamp(3rem, 2rem + 4vw, 5rem);
+  }
+
+  .split__copy {
+    display: grid;
+    gap: var(--space-6);
+    align-content: start;
+    max-width: 46rem;
+  }
+
+  .split__copy :global(.section-head) {
+    margin-bottom: 0;
+  }
+
+  .prose {
+    display: grid;
+    gap: var(--space-4);
+    font-size: var(--step-1);
+    line-height: 1.6;
+  }
+
+  .prose p + p {
+    color: var(--ink-muted);
+  }
+
+  .record {
+    display: grid;
+    margin: 0;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .record__row {
+    display: grid;
+    gap: 0.15rem 1.5rem;
+    padding-block: 0.9rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .record dt {
+    font-weight: 600;
+  }
+
+  .record dd {
+    margin: 0;
+    color: var(--ink-muted);
+  }
+
+  @media (min-width: 40rem) {
+    .record__row {
+      grid-template-columns: 12rem minmax(0, 1fr);
+    }
+  }
+
+  .release {
+    font-size: 0.9375rem;
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-6);
+  }
+
+  .split__visual {
+    display: grid;
+    gap: var(--space-6);
+    align-content: start;
+    max-width: 30rem;
+    width: 100%;
+    justify-self: center;
+  }
+
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-4);
+    margin: 0;
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .stats li {
+    display: grid;
+    gap: 0.25rem;
+    align-content: start;
+  }
+
+  .stats__value {
+    font-family: var(--font-serif);
+    font-size: var(--step-3);
+    line-height: 1;
+    color: var(--forest-900);
+  }
+
+  .stats__label {
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: var(--ink-muted);
+  }
+
+  @media (min-width: 64rem) {
+    .split--visual {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+  }
+
+  .narrow {
+    max-width: calc(46rem + 2 * var(--gutter));
+  }
+
+  .narrow :global(.section-head) {
+    margin-bottom: var(--space-6);
+  }
+
+  .articles {
+    display: grid;
+    gap: var(--space-5);
+    margin-top: var(--space-6);
+  }
+</style>

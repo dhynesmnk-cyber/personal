@@ -1,32 +1,35 @@
 ---
-import { hero, meta } from '../../content/site';
-import CTAButton from '../CTAButton.astro';
-import Arrow from '../Arrow.astro';
-import BridgeField from '../shapes/BridgeField.astro';
+import { brand } from '../content/brand';
+import { home } from '../content/home';
+import CTAButton from './CTAButton.astro';
+import Arrow from './Arrow.astro';
+import BridgeField from './shapes/BridgeField.astro';
 
+const { hero } = home;
 // Set the key phrase in italic without putting markup in the copy file.
-const EMPH = 'actually work';
-const [before, after] = hero.headline.includes(EMPH) ? hero.headline.split(EMPH) : [hero.headline, ''];
-const hasEmph = hero.headline.includes(EMPH);
+const [before, after] = hero.headline.includes(hero.emphasis)
+  ? hero.headline.split(hero.emphasis)
+  : [hero.headline, ''];
+const hasEmph = hero.headline.includes(hero.emphasis);
 ---
 
-<section class="hero" id="top" aria-labelledby="hero-title">
+<section class="hero" aria-labelledby="hero-title">
   <div class="container hero__grid">
     <div class="hero__copy">
       <p class="eyebrow">
         <span class="eyebrow__bar" aria-hidden="true"></span>
         <span>{hero.eyebrow}</span>
-        <span class="hero__place">{meta.location.split(',')[0]}</span>
+        <span class="hero__place">{brand.location.split(',')[0]}</span>
       </p>
       <h1 id="hero-title">
-        {before}{hasEmph && <em>{EMPH}</em>}{after}
+        {before}{hasEmph && <em>{hero.emphasis}</em>}{after}
       </h1>
       <p class="lede hero__sub">{hero.sub}</p>
       <div class="hero__actions">
         <CTAButton />
         <a class="text-link" href={hero.secondary.href}>
           {hero.secondary.label}
-          <Arrow direction="down" />
+          <Arrow />
         </a>
       </div>
     </div>
@@ -34,21 +37,12 @@ const hasEmph = hero.headline.includes(EMPH);
       <BridgeField labels={hero.zones} />
     </div>
   </div>
-
-  <div class="container">
-    <div class="proof">
-      <p class="proof__label">{hero.proofLabel}</p>
-      <ul class="proof__list" role="list">
-        {hero.proof.map((item) => <li>{item}</li>)}
-      </ul>
-    </div>
-  </div>
 </section>
 
 <style>
   .hero {
     position: relative;
-    padding-block: clamp(3rem, 2rem + 6vw, 6.5rem) clamp(0.5rem, 0.25rem + 1vw, 1.5rem);
+    padding-block: clamp(3rem, 2rem + 5vw, 6rem) clamp(2.5rem, 2rem + 2vw, 3.5rem);
     isolation: isolate;
   }
 
@@ -77,8 +71,13 @@ const hasEmph = hero.headline.includes(EMPH);
   }
 
   .hero__copy .eyebrow {
-    flex-wrap: wrap;
-    row-gap: 0.35rem;
+    flex-wrap: nowrap;
+  }
+
+  @media (max-width: 39.99rem) {
+    .hero__place {
+      display: none;
+    }
   }
 
   .hero__place {
@@ -134,47 +133,4 @@ const hasEmph = hero.headline.includes(EMPH);
     }
   }
 
-  /* ----- proof strip ----- */
-
-  .proof {
-    display: grid;
-    gap: var(--space-4);
-    margin-top: clamp(3rem, 2rem + 4vw, 5rem);
-    padding-top: var(--space-5);
-    border-top: 1px solid var(--rule);
-  }
-
-  .proof__label {
-    font-size: var(--step--1);
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--olive-700);
-  }
-
-  .proof__list {
-    display: grid;
-    gap: var(--space-3) var(--space-6);
-    margin: 0;
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  }
-
-  .proof__list li {
-    position: relative;
-    padding-left: 1rem;
-    font-size: 0.9375rem;
-    line-height: 1.45;
-    color: var(--ink);
-  }
-
-  .proof__list li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.55em;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--olive-600);
-  }
 </style>

@@ -1,0 +1,125 @@
+---
+import { services } from '../content/services';
+import Arrow from './Arrow.astro';
+import LayerStack from './shapes/LayerStack.astro';
+
+/** The three services as cards, each linking to its phase on the Services page. */
+---
+
+<ol class="svc" role="list">
+  {
+    services.phases.map((ph, i) => (
+      <li class="svc__card stack-host">
+        <div class="svc__visual">
+          <LayerStack layers={i + 1} gate={i >= 1} flow={i === 2} accentTop={i === 2} />
+        </div>
+        <p class="svc__num">Phase {ph.n}</p>
+        <h3 class="svc__name">
+          <a href={`/services/#phase-${ph.n}`}>{ph.name}</a>
+        </h3>
+        <p class="svc__summary">{ph.summary}</p>
+        <p class="svc__more" aria-hidden="true">
+          {services.stripLink}
+          <Arrow />
+        </p>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .svc {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+    padding: 0;
+  }
+
+  @media (min-width: 52rem) {
+    .svc {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .svc__card {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto auto auto 1fr auto;
+    gap: var(--space-3);
+    padding: clamp(1.4rem, 1rem + 1.4vw, 2rem);
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-l);
+    background: var(--white);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.4s var(--ease-out),
+      transform 0.4s var(--ease-out);
+  }
+
+  .svc__card:hover,
+  .svc__card:focus-within {
+    border-color: var(--rule-strong);
+    box-shadow: var(--shadow-frame);
+    transform: translateY(-3px);
+  }
+
+  .svc__visual {
+    display: flex;
+    align-items: flex-end;
+    width: 9.5rem;
+    height: 9.5rem;
+    margin-bottom: var(--space-2);
+  }
+
+  .svc__visual :global(.ls) {
+    width: 100%;
+  }
+
+  .svc__num {
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  .svc__name {
+    font-size: var(--step-2);
+  }
+
+  .svc__name a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  /* The heading link covers the whole card. */
+  .svc__name a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-l);
+  }
+
+
+  .svc__summary {
+    color: var(--ink-muted);
+  }
+
+  .svc__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: var(--space-2);
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--forest-900);
+  }
+
+  .svc__card:hover .svc__more :global(.arrow) {
+    transform: translateX(4px);
+  }
+
+  .svc__more :global(.arrow) {
+    transition: transform var(--dur-med) var(--ease-out);
+  }
+</style>

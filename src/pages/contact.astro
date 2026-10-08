@@ -1,0 +1,173 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import CTAButton from '../components/CTAButton.astro';
+import BridgeField from '../components/shapes/BridgeField.astro';
+import { BOOKING_IS_EMAIL, CONTACT_EMAIL, LINKS, brand, ctaBand } from '../content/brand';
+import { contact } from '../content/contact';
+import { home } from '../content/home';
+---
+
+<Base title={contact.title} description={contact.description}>
+  <PageHero eyebrow={contact.hero.eyebrow} heading={contact.hero.heading} lede={contact.hero.lede}>
+    <div slot="after" class="contact-actions">
+      <CTAButton />
+      {
+        BOOKING_IS_EMAIL && (
+          <p class="muted">
+            {ctaBand.emailNote} <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>.
+          </p>
+        )
+      }
+    </div>
+    <div slot="visual">
+      <BridgeField mode="settled" labels={home.hero.zones} />
+    </div>
+  </PageHero>
+
+  <section class="section" aria-labelledby="steps-title">
+    <div class="container contact-grid">
+      <div>
+        <h2 class="block-title" id="steps-title">{contact.stepsHeading}</h2>
+        <ol class="steps" role="list">
+          {
+            contact.steps.map((s, i) => (
+              <li>
+                <span class="steps__num" aria-hidden="true">
+                  {i + 1}
+                </span>
+                <h3>{s.title}</h3>
+                <p>{s.body}</p>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <aside class="details" aria-labelledby="details-title">
+        <h2 class="details__title" id="details-title">{contact.detailsHeading}</h2>
+        <dl>
+          <div>
+            <dt>{contact.details.email}</dt>
+            <dd><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></dd>
+          </div>
+          <div>
+            <dt>{contact.details.location}</dt>
+            <dd>{brand.location}</dd>
+          </div>
+          <div>
+            <dt>{contact.details.clients}</dt>
+            <dd>{brand.reach}</dd>
+          </div>
+          <div>
+            <dt>{contact.details.elsewhere}</dt>
+            <dd><a href={LINKS.github}>GitHub</a></dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .contact-actions {
+    display: grid;
+    gap: var(--space-4);
+    justify-items: start;
+    margin-top: var(--space-3);
+  }
+
+  .contact-actions a,
+  .details a {
+    color: var(--forest-900);
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-underline-offset: 0.25em;
+    overflow-wrap: anywhere;
+  }
+
+  .contact-grid {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
+  }
+
+  @media (min-width: 64rem) {
+    .contact-grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+    }
+  }
+
+  .block-title {
+    margin-bottom: var(--space-6);
+    font-size: var(--step-3);
+  }
+
+  .steps {
+    display: grid;
+    gap: 0;
+    margin: 0;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .steps li {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 0.25rem 0.75rem;
+    padding-block: 1.4rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .steps__num {
+    grid-row: span 2;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--forest-900);
+    color: var(--paper);
+    font-weight: 600;
+  }
+
+  .steps h3 {
+    font-size: var(--step-2);
+  }
+
+  .steps p {
+    color: var(--ink-muted);
+  }
+
+  .details {
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+    border-radius: var(--radius-l);
+    background: var(--paper-2);
+  }
+
+  .details__title {
+    margin-bottom: var(--space-4);
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  .details dl {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+  }
+
+  .details dt {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--ink-muted);
+  }
+
+  .details dd {
+    margin: 0;
+    font-size: 1.0625rem;
+  }
+</style>

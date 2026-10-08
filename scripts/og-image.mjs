@@ -26,7 +26,7 @@ try {
   // Lead with the name: a share card travels without the page around it.
   await page.evaluate(() => {
     const label = document.querySelector('.hero .eyebrow span:nth-of-type(2)');
-    if (label) label.textContent = 'David Hynes';
+    if (label) label.textContent = 'David Hynes Consulting';
   });
   await page.evaluate(() => document.fonts.ready);
   await page.screenshot({ path: join(root, 'public/og.png') });

@@ -1,66 +1,39 @@
 ---
-import { engagement } from '../../content/site';
-import SectionHead from '../SectionHead.astro';
-import CTAButton from '../CTAButton.astro';
-import LayerStack from '../shapes/LayerStack.astro';
+import { services } from '../content/services';
+import LayerStack from './shapes/LayerStack.astro';
+
+/**
+ * The three phases on a rail that fills as the reader scrolls; each phase
+ * lights up as the rail reaches it. Each phase has an id (phase-1 ...) so
+ * other pages can link straight to it.
+ */
 ---
 
-<section class="section" id="engagement" aria-labelledby="engagement-title">
-  <div class="container">
-    <SectionHead num="05" eyebrow={engagement.eyebrow} heading={engagement.heading} id="engagement-title">
-      <p class="lede">{engagement.intro}</p>
-    </SectionHead>
-
-    <ol class="phases" role="list" data-scrub>
-      {
-        engagement.phases.map((ph, i) => (
-          <li class="phase stack-host" style={`--k:${i}`}>
-            <span class="phase__node" aria-hidden="true" />
-            <div class="phase__visual">
-              <LayerStack layers={i + 1} gate={i >= 1} flow={i === 2} accentTop={i === 2} />
-            </div>
-            <p class="phase__num">Phase {ph.n}</p>
-            <h3 class="phase__name">{ph.name}</h3>
-            <p class="phase__body">{ph.body}</p>
-            <h4 class="phase__sub">{engagement.outputsLabel}</h4>
-            <ul class="phase__outputs" role="list">
-              {ph.outputs.map((o) => (
-                <li>{o}</li>
-              ))}
-            </ul>
-            <p class="phase__removes">
-              <span>{engagement.removesLabel}</span>
-              {ph.removes}
-            </p>
-          </li>
-        ))
-      }
-    </ol>
-
-    <div class="caps">
-      <h3 class="caps__title">{engagement.capabilitiesTitle}</h3>
-      <div class="caps__grid">
-        {
-          engagement.capabilities.map((c) => (
-            <div class="caps__col">
-              <h4>{c.title}</h4>
-              <ul role="list">
-                {c.items.map((it) => (
-                  <li>{it}</li>
-                ))}
-              </ul>
-            </div>
-          ))
-        }
-      </div>
-    </div>
-
-    <div class="eng__cta">
-      <p>{engagement.ctaLead}</p>
-      <CTAButton />
-    </div>
-  </div>
-</section>
+<ol class="phases" role="list" data-scrub>
+  {
+    services.phases.map((ph, i) => (
+      <li class="phase stack-host" id={`phase-${ph.n}`} style={`--k:${i}`}>
+        <span class="phase__node" aria-hidden="true" />
+        <div class="phase__visual">
+          <LayerStack layers={i + 1} gate={i >= 1} flow={i === 2} accentTop={i === 2} />
+        </div>
+        <p class="phase__num">Phase {ph.n}</p>
+        <h2 class="phase__name">{ph.name}</h2>
+        <p class="phase__body">{ph.body}</p>
+        <h3 class="phase__sub">{services.outputsLabel}</h3>
+        <ul class="phase__outputs" role="list">
+          {ph.outputs.map((o) => (
+            <li>{o}</li>
+          ))}
+        </ul>
+        <p class="phase__removes">
+          <span>{services.removesLabel}</span>
+          {ph.removes}
+        </p>
+      </li>
+    ))
+  }
+</ol>
 
 <style>
   /* ----- the phased rail ----- */
@@ -254,57 +227,4 @@ import LayerStack from '../shapes/LayerStack.astro';
     }
   }
 
-  /* ----- capabilities ----- */
-
-  .caps {
-    display: grid;
-    gap: var(--space-6);
-    margin-top: clamp(4rem, 3rem + 4vw, 6rem);
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--rule-strong);
-  }
-
-  .caps__title {
-    font-size: var(--step-2);
-  }
-
-  .caps__grid {
-    display: grid;
-    gap: var(--space-6) var(--space-5);
-    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
-  }
-
-  .caps__col h4 {
-    margin-bottom: var(--space-3);
-    font-size: 1.15rem;
-  }
-
-  .caps__col ul {
-    display: grid;
-    gap: 0.4rem;
-    margin: 0;
-  }
-
-  .caps__col li {
-    font-size: 0.9375rem;
-    color: var(--ink-muted);
-  }
-
-  .eng__cta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-4) var(--space-6);
-    margin-top: clamp(3rem, 2rem + 3vw, 4.5rem);
-    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
-    border-radius: var(--radius-l);
-    background: var(--moss-100);
-  }
-
-  .eng__cta p {
-    font-family: var(--font-serif);
-    font-size: var(--step-2);
-    line-height: 1.25;
-  }
 </style>

@@ -1,0 +1,158 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import Approach from '../components/Approach.astro';
+import PhaseRail from '../components/PhaseRail.astro';
+import CtaBand from '../components/CtaBand.astro';
+import CTAButton from '../components/CTAButton.astro';
+import LayerStack from '../components/shapes/LayerStack.astro';
+import { services } from '../content/services';
+---
+
+<Base title={services.title} description={services.description}>
+  <PageHero eyebrow={services.hero.eyebrow} heading={services.hero.heading} lede={services.hero.lede}>
+    <div slot="visual" class="svc-hero-visual">
+      <LayerStack layers={3} gate flow accentTop />
+    </div>
+  </PageHero>
+
+  <section class="section" aria-labelledby="phases-title">
+    <div class="container">
+      <h2 class="visually-hidden" id="phases-title">{services.stripHeading}</h2>
+      <PhaseRail />
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="approach-title">
+    <div class="container">
+      <Approach />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="audience-title">
+    <div class="container">
+      <h2 class="block-title" id="audience-title">{services.audienceHeading}</h2>
+      <ul class="audience" role="list">
+        {
+          services.audience.map((a) => (
+            <li>
+              <h3>{a.title}</h3>
+              <p>{a.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h2 class="block-title caps-title" id="caps-title">{services.capabilitiesHeading}</h2>
+      <div class="caps">
+        {
+          services.capabilities.map((c) => (
+            <div class="caps__col">
+              <h3>{c.title}</h3>
+              <ul role="list">
+                {c.items.map((it) => (
+                  <li>{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="lead-cta">
+        <p>{services.ctaLead}</p>
+        <CTAButton />
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .svc-hero-visual {
+    max-width: 16rem;
+    margin-inline: auto;
+  }
+
+  .block-title {
+    margin-bottom: var(--space-6);
+    font-size: var(--step-3);
+  }
+
+  .audience {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+  }
+
+  @media (min-width: 52rem) {
+    .audience {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .audience li {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    border-top: 3px solid var(--forest-900);
+    border-radius: 0 0 var(--radius-m) var(--radius-m);
+    background: var(--paper-2);
+  }
+
+  .audience h3 {
+    font-size: var(--step-2);
+  }
+
+  .audience p {
+    color: var(--ink-muted);
+  }
+
+  .caps-title {
+    margin-top: clamp(4rem, 3rem + 4vw, 6rem);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .caps {
+    display: grid;
+    gap: var(--space-6) var(--space-5);
+    grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  }
+
+  .caps h3 {
+    margin-bottom: var(--space-3);
+    font-size: 1.15rem;
+  }
+
+  .caps ul {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .caps li {
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+
+  .lead-cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+    margin-top: clamp(3rem, 2rem + 3vw, 4.5rem);
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    border-radius: var(--radius-l);
+    background: var(--moss-100);
+  }
+
+  .lead-cta p {
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    line-height: 1.25;
+  }
+</style>

@@ -3,22 +3,30 @@ import '../styles/tokens.css';
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
-import { CONTACT_EMAIL, LINKS, meta } from '../content/site';
+import { CONTACT_EMAIL, LINKS, brand } from '../content/brand';
 
+interface Props {
+  /** Page name, e.g. "Services". Omit on the home page. */
+  title?: string;
+  description?: string;
+}
+const { title, description = brand.description } = Astro.props;
+
+const fullTitle = title ? `${title} | ${brand.name}` : `${brand.name} | ${brand.tagline}`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
 const ogImage = Astro.site ? new URL('/og.png', Astro.site).href : '/og.png';
 
 const jsonLd = {
   '@context': 'https://schema.org',
-  '@type': 'Person',
-  name: meta.name,
-  jobTitle: meta.role,
-  description: meta.description,
+  '@type': 'ProfessionalService',
+  name: brand.name,
+  description: brand.description,
   email: `mailto:${CONTACT_EMAIL}`,
+  areaServed: ['AU', 'US'],
   address: { '@type': 'PostalAddress', addressLocality: 'Melbourne', addressRegion: 'VIC', addressCountry: 'AU' },
-  sameAs: [LINKS.github],
-  knowsAbout: ['AI strategy', 'AI governance', 'Evaluation design', 'AI adoption', 'Retrieval Augmented Generation'],
-  ...(canonical ? { url: canonical } : {}),
+  founder: { '@type': 'Person', name: brand.founder, jobTitle: 'Founder and Principal', sameAs: [LINKS.github] },
+  knowsAbout: ['AI strategy', 'AI governance', 'Evaluation design', 'AI adoption'],
+  ...(Astro.site ? { url: Astro.site.href } : {}),
 };
 ---
 
@@ -27,9 +35,9 @@ const jsonLd = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{meta.title}</title>
-    <meta name="description" content={meta.description} />
-    <meta name="author" content={meta.name} />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={brand.founder} />
     <meta name="theme-color" content="#f6f5ef" />
     <meta name="color-scheme" content="light" />
     {canonical && <link rel="canonical" href={canonical} />}
@@ -37,15 +45,17 @@ const jsonLd = {
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/fonts/newsreader-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/newsreader-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin />
 
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={brand.name} />
     <meta property="og:locale" content="en_AU" />
-    <meta property="og:title" content={meta.title} />
-    <meta property="og:description" content={meta.description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="David Hynes. I build AI tools that actually work in real business environments." />
+    <meta property="og:image:alt" content={`${brand.name}. AI tools that actually work in real business environments.`} />
     {canonical && <meta property="og:url" content={canonical} />}
     <meta name="twitter:card" content="summary_large_image" />
 

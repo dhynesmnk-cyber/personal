@@ -1,0 +1,191 @@
+---
+import { logoWall } from '../content/logos';
+
+/**
+ * Rows of logos for the models and tools we work with. Each mark comes from
+ * the /logos.svg sprite and sits beside its name in plain text.
+ *
+ * With motion allowed, rows scroll slowly in alternating directions and a
+ * Pause button stops them (WCAG 2.2.2); hovering a row pauses it too. With
+ * reduced motion or no JavaScript, rows render as a static, wrapped grid and
+ * the duplicate track used for looping is never shown.
+ */
+---
+
+<section class="lw" aria-labelledby="lw-title" data-logo-wall data-pause={logoWall.pause} data-play={logoWall.play}>
+  <div class="container lw__head">
+    <h2 class="lw__title" id="lw-title">{logoWall.heading}</h2>
+    <button class="lw__toggle" type="button" hidden data-lw-toggle>{logoWall.pause}</button>
+  </div>
+
+  <div class="lw__rows">
+    {
+      logoWall.rows.map((row, r) => (
+        <div class="lw__row" data-dir={r % 2 ? 'rev' : 'fwd'} style={`--n:${row.logos.length}`}>
+          <div class="lw__track">
+            {[false, true].map((clone) => (
+              <ul
+                class:list={['lw__list', clone && 'lw__list--clone']}
+                role="list"
+                aria-label={clone ? undefined : row.label}
+                aria-hidden={clone ? 'true' : undefined}
+              >
+                {row.logos.map((logo) => (
+                  <li class="lw__item">
+                    <svg class="lw__mark" aria-hidden="true" focusable="false" width="22" height="22">
+                      <use href={`/logos.svg#logo-${logo.id}`} />
+                    </svg>
+                    <span>{logo.name}</span>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        </div>
+      ))
+    }
+  </div>
+
+  <p class="container lw__note">{logoWall.note}</p>
+</section>
+
+<script>
+  const wall = document.querySelector<HTMLElement>('[data-logo-wall]');
+  const toggle = wall?.querySelector<HTMLButtonElement>('[data-lw-toggle]');
+  if (wall && toggle && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    toggle.hidden = false;
+    toggle.addEventListener('click', () => {
+      const paused = wall.toggleAttribute('data-paused');
+      toggle.textContent = (paused ? wall.dataset.play : wall.dataset.pause) ?? '';
+    });
+  }
+</script>
+
+<style>
+  .lw {
+    padding-block: var(--space-8) var(--space-6);
+    border-top: 1px solid var(--rule);
+    background: var(--paper-2);
+    overflow: hidden;
+  }
+
+  .lw__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-5);
+    margin-bottom: var(--space-6);
+  }
+
+  .lw__title {
+    font-family: var(--font-sans);
+    font-size: var(--step--1);
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  .lw__toggle {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 0.9rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 999px;
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .lw__toggle[hidden] {
+    display: none;
+  }
+
+  .lw__rows {
+    display: grid;
+    gap: var(--space-5);
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin-inline: auto;
+  }
+
+  .lw__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem 2rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .lw__list--clone {
+    display: none;
+  }
+
+  .lw__item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--olive-700);
+    white-space: nowrap;
+  }
+
+  .lw__mark {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    color: var(--forest-700);
+  }
+
+  .lw__note {
+    margin-top: var(--space-6);
+    font-size: 0.8125rem;
+    color: var(--ink-muted);
+  }
+
+  /* ----- scrolling rows, only when motion is allowed and JS is running ----- */
+
+  :global(.has-motion) .lw__rows {
+    width: 100%;
+  }
+
+  :global(.has-motion) .lw__row {
+    overflow: hidden;
+    mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  }
+
+  :global(.has-motion) .lw__track {
+    display: flex;
+    width: max-content;
+    animation: lw-scroll calc(var(--n) * 3.4s) linear infinite;
+  }
+
+  :global(.has-motion) .lw__row[data-dir='rev'] .lw__track {
+    animation-direction: reverse;
+  }
+
+  :global(.has-motion) .lw__list {
+    flex-wrap: nowrap;
+    padding-right: 2rem;
+  }
+
+  :global(.has-motion) .lw__list--clone {
+    display: flex;
+  }
+
+  .lw[data-paused] .lw__track,
+  .lw__row:hover .lw__track {
+    animation-play-state: paused;
+  }
+
+  @keyframes lw-scroll {
+    to {
+      transform: translateX(-50%);
+    }
+  }
+</style>

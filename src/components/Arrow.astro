@@ -1,10 +1,10 @@
 ---
 /** Small directional arrow for links and buttons. Decorative: the link text carries the meaning. */
 interface Props {
-  direction?: 'right' | 'down' | 'up-right';
+  direction?: 'right' | 'left' | 'down' | 'up-right';
 }
 const { direction = 'right' } = Astro.props;
-const rotate = direction === 'down' ? 90 : direction === 'up-right' ? -45 : 0;
+const rotate = { right: 0, left: 180, down: 90, 'up-right': -45 }[direction];
 ---
 
 <svg

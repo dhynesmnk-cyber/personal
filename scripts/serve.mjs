@@ -48,6 +48,8 @@ createServer(async (req, res) => {
     res.writeHead(200, { ...headers, 'content-type': types[extname(file)] ?? 'application/octet-stream' });
     res.end(body);
   } catch {
-    res.writeHead(404, headers).end('Not found');
+    // Like Netlify: unknown paths get the site's own 404 page.
+    const page = await readFile(join(dist, '404.html')).catch(() => 'Not found');
+    res.writeHead(404, { ...headers, 'content-type': types['.html'] }).end(page);
   }
 }).listen(port, '127.0.0.1', () => console.log(`Serving dist on http://localhost:${port}`));
