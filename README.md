@@ -59,7 +59,7 @@ tests/site.spec.ts            the test suite
 
 ## Deploying
 
-Netlify reads `netlify.toml`: it builds with `npm run build` and publishes `dist/`. Set `SITE_URL` (for example `https://davidhynes.com.au`) in the site's environment variables so canonical and Open Graph URLs are absolute.
+Netlify reads `netlify.toml`: it builds with `npm run build` and publishes `dist/`. Netlify deploys whatever is on `main`. Canonical and Open Graph URLs use the site's Netlify address automatically (Netlify's `URL` variable). If a custom domain is added later, Netlify updates `URL` itself; set `SITE_URL` only to override it.
 
 Any static host works. Copy the headers from `netlify.toml` if the host is not Netlify.
 

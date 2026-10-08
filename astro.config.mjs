@@ -1,9 +1,10 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
-// Set SITE_URL in the host's environment (e.g. https://davidhynes.com.au) so
-// canonical and Open Graph URLs are absolute. Without it they are omitted.
-const site = process.env.SITE_URL || undefined;
+// Absolute canonical and Open Graph URLs. Netlify sets URL to the site's
+// primary address on every build; SITE_URL overrides it (for a custom domain
+// on another host, say). Without either, canonical is omitted.
+const site = process.env.SITE_URL || process.env.URL || undefined;
 
 export default defineConfig({
   site,
