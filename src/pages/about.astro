@@ -1,0 +1,364 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHead from '../components/SectionHead.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Mark from '../components/Mark.astro';
+import { about } from '../content/about';
+
+const { founder } = about;
+---
+
+<Base title={about.title} description={about.description}>
+  <PageHero eyebrow={about.hero.eyebrow} heading={about.hero.heading} lede={about.hero.lede} />
+
+  <section class="section" aria-labelledby="founder-title">
+    <div class="container founder">
+      <div class="founder__copy">
+        <SectionHead eyebrow={founder.eyebrow} heading={founder.name} id="founder-title">
+          <p class="founder__role">{founder.role}</p>
+        </SectionHead>
+        <div class="prose">
+          {founder.paragraphs.map((p) => <p>{p}</p>)}
+        </div>
+      </div>
+      <figure class="founder__quote">
+        <Mark size={30} />
+        <blockquote>
+          <p>{founder.quote}</p>
+        </blockquote>
+        <figcaption>{founder.name}, {founder.role}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section section--alt" aria-labelledby="principles-title">
+    <div class="container">
+      <h2 class="block-title" id="principles-title">{about.principlesHeading}</h2>
+      <ol class="principles" role="list">
+        {
+          about.principles.map((pr, i) => (
+            <li>
+              <span class="principles__num" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
+              <h3>{pr.title}</h3>
+              <p>{pr.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="experience-title">
+    <div class="container">
+      <div class="history">
+        <h2 class="history__title" id="experience-title">{about.experienceHeading}</h2>
+        <div>
+          <ol class="tl" role="list" data-scrub>
+            {
+              about.experience.map((t) => (
+                <li class="tl__item">
+                  <p class="tl__when">{t.when}</p>
+                  <div class="tl__body">
+                    <h3 class="tl__org">{t.org}</h3>
+                    <p class="tl__role">{t.role}</p>
+                    <p class="tl__text">{t.body}</p>
+                  </div>
+                </li>
+              ))
+            }
+          </ol>
+          <p class="earlier">
+            <span>{about.earlier.label}</span>
+            {about.earlier.body}
+          </p>
+          <div class="creds">
+            <h3>{about.credentialsHeading}</h3>
+            <ul role="list">
+              {about.credentials.map((c) => <li>{c}</li>)}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .founder {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
+  }
+
+  @media (min-width: 64rem) {
+    .founder {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+    }
+  }
+
+  .founder__copy {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .founder__copy :global(.section-head) {
+    margin-bottom: 0;
+  }
+
+  .founder__role {
+    font-weight: 600;
+    color: var(--olive-700);
+  }
+
+  .prose {
+    display: grid;
+    gap: var(--space-4);
+    max-width: 40rem;
+    font-size: var(--step-1);
+    line-height: 1.6;
+  }
+
+  .prose p + p {
+    color: var(--ink-muted);
+  }
+
+  .founder__quote {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0;
+    padding: clamp(1.5rem, 1rem + 2vw, 2.25rem);
+    border-radius: var(--radius-l);
+    background: var(--forest-900);
+    color: var(--paper);
+  }
+
+  .founder__quote blockquote {
+    margin: 0;
+  }
+
+  .founder__quote blockquote p {
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    line-height: 1.35;
+  }
+
+  .founder__quote figcaption {
+    font-size: 0.9375rem;
+    color: var(--sage-200);
+  }
+
+  .founder__quote :global(.mark) {
+    --olive-400: var(--lime-200);
+    --forest-700: var(--sage-300);
+    --forest-900: var(--lime-200);
+  }
+
+  .block-title {
+    margin-bottom: var(--space-6);
+    font-size: var(--step-3);
+  }
+
+  .principles {
+    display: grid;
+    gap: var(--space-5);
+    margin: 0;
+  }
+
+  @media (min-width: 52rem) {
+    .principles {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .principles li {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding-top: var(--space-4);
+    border-top: 2px solid var(--forest-900);
+  }
+
+  .principles__num {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--olive-700);
+  }
+
+  .principles h3 {
+    font-size: var(--step-2);
+  }
+
+  .principles p {
+    color: var(--ink-muted);
+  }
+
+  .earlier {
+    margin-top: var(--space-6);
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-m);
+    background: var(--paper-2);
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+
+  .earlier span {
+    display: block;
+    margin-bottom: 0.2rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  .creds {
+    margin-top: var(--space-7);
+  }
+
+  .creds h3 {
+    margin-bottom: var(--space-3);
+    font-size: var(--step-1);
+  }
+
+  .creds ul {
+    display: grid;
+    gap: 0.4rem;
+    margin: 0;
+  }
+
+  .creds li {
+    color: var(--ink-muted);
+  }
+
+
+  .history {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  .history__title {
+    font-size: var(--step-2);
+  }
+
+  .tl {
+    --p: 1;
+    position: relative;
+    display: grid;
+    gap: 0;
+    margin: 0;
+    padding: 0 0 0 1.75rem;
+  }
+
+  /* The spine, drawn as the reader scrolls through the story. */
+  .tl::before,
+  .tl::after {
+    content: '';
+    position: absolute;
+    left: 0.3rem;
+    top: 0.5rem;
+    bottom: 0.5rem;
+    width: 2px;
+    border-radius: 1px;
+  }
+
+  .tl::before {
+    background: var(--rule);
+  }
+
+  .tl::after {
+    background: var(--forest-700);
+    transform-origin: top;
+    transform: scaleY(var(--p));
+  }
+
+  .tl__item {
+    position: relative;
+    display: grid;
+    gap: 0.25rem 2rem;
+    padding-block: 1.1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .tl__item:last-child {
+    border-bottom: 0;
+  }
+
+  .tl__item::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.75rem + 0.3rem - 4px);
+    top: 1.55rem;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--paper);
+    border: 2px solid var(--forest-700);
+    z-index: 1;
+  }
+
+  .tl__item:first-child::before {
+    background: var(--forest-900);
+    border-color: var(--forest-900);
+    box-shadow: 0 0 0 5px var(--moss-100);
+  }
+
+  .tl__when {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--olive-700);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tl__org {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .tl__role {
+    font-size: 0.9375rem;
+    font-weight: 500;
+    color: var(--ink);
+  }
+
+  .tl__text {
+    margin-top: 0.35rem;
+    max-width: 44rem;
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+
+  @media (min-width: 48rem) {
+    .tl__item {
+      grid-template-columns: 11rem minmax(0, 1fr);
+    }
+
+    .tl__when {
+      align-self: start;
+      padding-top: 0.3rem;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .history {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    }
+
+    .history__title {
+      position: sticky;
+      top: calc(var(--header-h) + 2rem);
+      align-self: start;
+    }
+  }
+
+</style>

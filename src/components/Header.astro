@@ -1,29 +1,69 @@
 ---
-import { meta, nav } from '../content/site';
+import { brand, cta, nav } from '../content/brand';
 import CTAButton from './CTAButton.astro';
 import Mark from './Mark.astro';
+
+const path = Astro.url.pathname;
+const isCurrent = (href: string) => path === href || (href !== '/' && path.startsWith(href));
+const [first, ...rest] = brand.name.split(' ');
 ---
 
-<header class="site-header">
+<header class="site-header" data-site-header>
   <div class="container site-header__inner">
-    <a class="wordmark" href="#top">
+    <a class="wordmark" href="/" aria-label={`${brand.name}, home`}>
       <Mark />
-      <span>{meta.name}</span>
+      <span class="wordmark__text" aria-hidden="true">
+        <span class="wordmark__name">{[first, rest[0]].join(' ')}</span>
+        <span class="wordmark__sub">{rest.slice(1).join(' ')}</span>
+      </span>
     </a>
-    <nav class="site-nav" aria-label="Sections">
+
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" hidden data-menu-btn>
+      <span class="menu-btn__bars" aria-hidden="true"><span></span><span></span></span>
+      {cta.menu}
+    </button>
+
+    <nav class="site-nav" id="site-nav" aria-label="Main">
       <ul role="list">
         {
           nav.map((item) => (
             <li>
-              <a href={item.href}>{item.label}</a>
+              <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
             </li>
           ))
         }
       </ul>
     </nav>
-    <CTAButton size="small" label="Book a call" />
+
+    <div class="site-header__cta">
+      <CTAButton size="small" label={cta.short} />
+    </div>
   </div>
 </header>
+
+<script>
+  // Collapse the nav behind a menu button on small screens. Without this
+  // script the nav simply wraps onto its own row, so it always works.
+  const header = document.querySelector<HTMLElement>('[data-site-header]');
+  const button = header?.querySelector<HTMLButtonElement>('[data-menu-btn]');
+  if (header && button) {
+    header.dataset.js = '';
+    button.hidden = false;
+    const setOpen = (open: boolean) => {
+      button.setAttribute('aria-expanded', String(open));
+      header.toggleAttribute('data-open', open);
+    };
+    button.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
+    header.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && header.hasAttribute('data-open')) {
+        setOpen(false);
+        button.focus();
+      }
+    });
+  }
+</script>
 
 <style>
   .site-header {
@@ -36,9 +76,9 @@ import Mark from './Mark.astro';
 
   .site-header__inner {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: var(--space-5);
+    gap: 0 var(--space-5);
     min-height: var(--header-h);
   }
 
@@ -46,23 +86,45 @@ import Mark from './Mark.astro';
     display: inline-flex;
     align-items: center;
     gap: 0.6rem;
-    min-height: 44px;
-    font-family: var(--font-serif);
-    font-size: 1.3rem;
-    font-weight: 480;
-    letter-spacing: -0.01em;
+    min-height: calc(var(--header-h) - 1px);
+    margin-right: auto;
     color: var(--ink);
     text-decoration: none;
   }
 
+  .wordmark__text {
+    display: grid;
+    line-height: 1;
+  }
+
+  .wordmark__name {
+    font-family: var(--font-serif);
+    font-size: 1.3rem;
+    font-weight: 480;
+    letter-spacing: -0.01em;
+  }
+
+  .wordmark__sub {
+    margin-top: 0.2rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--olive-700);
+  }
+
+  /* ----- nav ----- */
+
   .site-nav {
-    display: none;
-    margin-left: auto;
+    order: 3;
+    flex-basis: 100%;
   }
 
   .site-nav ul {
     display: flex;
-    gap: clamp(1rem, 0.5rem + 1.2vw, 2rem);
+    flex-wrap: wrap;
+    gap: 0 1.25rem;
+    padding-bottom: 0.5rem;
   }
 
   .site-nav a {
@@ -82,14 +144,126 @@ import Mark from './Mark.astro';
       background-size var(--dur-med) var(--ease-out);
   }
 
-  .site-nav a:hover {
+  .site-nav a:hover,
+  .site-nav a[aria-current='page'] {
     color: var(--ink);
     background-size: 100% 1px;
   }
 
-  @media (min-width: 60rem) {
-    .site-nav {
+  .site-nav a[aria-current='page'] {
+    background-image: linear-gradient(var(--olive-600), var(--olive-600));
+    background-size: 100% 2px;
+  }
+
+  .site-header__cta {
+    display: none;
+  }
+
+  /* ----- menu button (only shown once the script has run) ----- */
+
+  .menu-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 44px;
+    padding: 0 0.85rem;
+    border: 1px solid var(--rule-strong);
+    border-radius: 6px;
+    background: var(--white);
+    color: var(--ink);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .menu-btn[hidden] {
+    display: none;
+  }
+
+  .menu-btn__bars {
+    display: grid;
+    gap: 4px;
+  }
+
+  .menu-btn__bars span {
+    display: block;
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    transition: transform var(--dur-fast) ease;
+  }
+
+  .site-header[data-open] .menu-btn__bars span:first-child {
+    transform: translateY(3px) rotate(45deg);
+  }
+
+  .site-header[data-open] .menu-btn__bars span:last-child {
+    transform: translateY(-3px) rotate(-45deg);
+  }
+
+  /* With the script running, small screens get a collapsible panel. */
+  @media (max-width: 59.99rem) {
+    .site-header[data-js] .site-nav {
+      display: none;
+    }
+
+    .site-header[data-js][data-open] .site-nav {
       display: block;
+      padding-block: 0.25rem 1rem;
+      border-top: 1px solid var(--rule);
+    }
+
+    .site-header[data-js][data-open] .site-nav ul {
+      flex-direction: column;
+    }
+
+
+
+    .site-header[data-js] .site-header__inner {
+      gap: 0 var(--space-3);
+    }
+  }
+
+  /* On narrow phones the header CTA lives inside the open menu. */
+  @media (max-width: 24.99rem) {
+    .site-header[data-js][data-open] .site-header__cta {
+      display: block;
+      order: 4;
+      flex-basis: 100%;
+      padding-bottom: 1rem;
+    }
+  }
+
+  @media (min-width: 25rem) {
+    .site-header__cta {
+      display: block;
+      order: 2;
+    }
+
+    .menu-btn {
+      order: 3;
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .site-header__inner {
+      flex-wrap: nowrap;
+    }
+
+    .menu-btn {
+      display: none !important;
+    }
+
+    .site-nav {
+      order: 0;
+      flex-basis: auto;
+    }
+
+    .site-nav ul {
+      gap: clamp(1rem, 0.5rem + 1.2vw, 2rem);
+      padding-bottom: 0;
     }
   }
 </style>

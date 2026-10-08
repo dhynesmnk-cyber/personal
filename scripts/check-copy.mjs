@@ -2,7 +2,7 @@
 /**
  * Copy lint. Fails the build if site copy uses banned jargon, em or en dashes
  * used as dashes, or common US spellings where Australian English is wanted.
- * Scans the copy file and the visible text of every component.
+ * Scans every content file and the visible text of every component and page.
  */
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
@@ -60,9 +60,9 @@ async function* walk(dir) {
   }
 }
 
-/** Visible copy only: strings in site.ts, and text between tags in .astro files. */
+/** Visible copy only: strings in content files, and text between tags in .astro files. */
 function extractCopy(file, source) {
-  if (file.endsWith('site.ts')) {
+  if (file.endsWith('.ts')) {
     return [...source.matchAll(/(['"`])((?:\\.|(?!\1).)*)\1/g)].map((m) => m[2]);
   }
   const markup = source
@@ -75,9 +75,11 @@ function extractCopy(file, source) {
 }
 
 const problems = [];
-const files = [join(root, 'src/content/site.ts')];
-for await (const f of walk(join(root, 'src/components'))) if (f.endsWith('.astro')) files.push(f);
-for await (const f of walk(join(root, 'src/layouts'))) if (f.endsWith('.astro')) files.push(f);
+const files = [];
+for await (const f of walk(join(root, 'src/content'))) if (f.endsWith('.ts')) files.push(f);
+for (const dir of ['src/components', 'src/layouts', 'src/pages']) {
+  for await (const f of walk(join(root, dir))) if (f.endsWith('.astro')) files.push(f);
+}
 
 for (const file of files) {
   const source = await readFile(file, 'utf8');

@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import PageHero from '../components/PageHero.astro';
+import CTAButton from '../components/CTAButton.astro';
+import { nav, notFound } from '../content/brand';
+---
+
+<Base title={notFound.title}>
+  <PageHero eyebrow="404" heading={notFound.heading} lede={notFound.body}>
+    <div slot="after" class="nf">
+      <ul class="nf__links" role="list">
+        <li><a href="/">Home</a></li>
+        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+      </ul>
+      <CTAButton />
+    </div>
+  </PageHero>
+</Base>
+
+<style>
+  .nf {
+    display: grid;
+    gap: var(--space-6);
+    justify-items: start;
+    margin-top: var(--space-3);
+  }
+
+  .nf__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3) var(--space-5);
+  }
+
+  .nf__links a {
+    display: inline-flex;
+    min-height: 32px;
+    align-items: center;
+    font-weight: 600;
+    color: var(--forest-900);
+    text-decoration: underline;
+    text-decoration-color: var(--rule-strong);
+    text-underline-offset: 0.25em;
+  }
+</style>

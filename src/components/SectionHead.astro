@@ -1,20 +1,22 @@
 ---
+/** Eyebrow, section heading and optional intro (slot). `num` adds a section number. */
 interface Props {
-  num: string;
+  num?: string;
   eyebrow: string;
   heading: string;
   id: string;
-  tone?: 'default' | 'dark';
+  level?: 'h2' | 'h3';
 }
-const { num, eyebrow, heading, id } = Astro.props;
+const { num, eyebrow, heading, id, level = 'h2' } = Astro.props;
+const Heading = level;
 ---
 
 <header class="section-head">
   <p class="eyebrow">
-    <span class="eyebrow__num">{num}</span>
+    {num && <span class="eyebrow__num">{num}</span>}
     <span class="eyebrow__bar" aria-hidden="true"></span>
     <span>{eyebrow}</span>
   </p>
-  <h2 id={id}>{heading}</h2>
+  <Heading id={id}>{heading}</Heading>
   <slot />
 </header>

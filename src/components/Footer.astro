@@ -1,46 +1,46 @@
 ---
-import { CONTACT_EMAIL, LINKS, footer, meta, nav } from '../content/site';
+import { CONTACT_EMAIL, LINKS, brand, footer, nav } from '../content/brand';
 import Mark from './Mark.astro';
+import LogoWall from './LogoWall.astro';
 
 const year = new Date().getFullYear();
 ---
 
 <footer class="site-footer">
-  <div class="container site-footer__grid">
-    <div class="site-footer__id">
-      <p class="site-footer__name"><Mark size={22} /> {meta.name}</p>
-      <p class="muted">{meta.role}.<br />{meta.location}.</p>
-    </div>
+  <LogoWall />
 
-    <nav aria-label="Footer">
-      <h2 class="site-footer__title">On this page</h2>
-      <ul role="list">
-        {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
-      </ul>
-    </nav>
+  <div class="site-footer__main">
+    <div class="container site-footer__grid">
+      <div class="site-footer__id">
+        <p class="site-footer__name"><Mark size={22} /> {brand.name}</p>
+        <p class="muted">{footer.blurb}</p>
+        <p class="muted">{brand.location}. {brand.reach}</p>
+      </div>
 
-    <div>
-      <h2 class="site-footer__title">{footer.credentialsTitle}</h2>
-      <ul role="list" class="muted">
-        {footer.credentials.map((c) => <li>{c}</li>)}
-      </ul>
-    </div>
+      <nav aria-label="Footer">
+        <h2 class="site-footer__title">{footer.pagesTitle}</h2>
+        <ul role="list">
+          <li><a href="/">Home</a></li>
+          {nav.map((item) => <li><a href={item.href}>{item.label}</a></li>)}
+        </ul>
+      </nav>
 
-    <div>
-      <h2 class="site-footer__title">Contact</h2>
-      <ul role="list">
-        <li><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
-        <li><a href={LINKS.github}>GitHub</a></li>
-      </ul>
+      <div>
+        <h2 class="site-footer__title">{footer.contactTitle}</h2>
+        <ul role="list">
+          <li><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
+          <li><a href={LINKS.github}>GitHub</a></li>
+        </ul>
+      </div>
     </div>
-  </div>
-  <div class="container site-footer__base">
-    <p class="muted">&copy; {year} {meta.name}. Built as a static site: no trackers, no third-party scripts.</p>
+    <div class="container site-footer__base">
+      <p class="muted">&copy; {year} {brand.name}. {footer.rights}</p>
+    </div>
   </div>
 </footer>
 
 <style>
-  .site-footer {
+  .site-footer__main {
     padding-block: var(--space-8) var(--space-6);
     background: var(--paper);
     border-top: 1px solid var(--rule);
@@ -53,13 +53,19 @@ const year = new Date().getFullYear();
     grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr));
   }
 
+  .site-footer__id {
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    max-width: 24rem;
+  }
+
   .site-footer__name {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     font-family: var(--font-serif);
     font-size: 1.25rem;
-    margin-bottom: var(--space-3);
   }
 
   .site-footer__title {
@@ -76,7 +82,7 @@ const year = new Date().getFullYear();
     margin-top: 0.35rem;
   }
 
-  .site-footer a {
+  .site-footer__main a {
     display: inline-block;
     padding-block: 0.15rem;
     color: var(--ink);
@@ -86,7 +92,7 @@ const year = new Date().getFullYear();
     overflow-wrap: anywhere;
   }
 
-  .site-footer a:hover {
+  .site-footer__main a:hover {
     text-decoration-color: currentColor;
   }
 

@@ -1,0 +1,104 @@
+---
+import { approach } from '../content/services';
+
+/** "From executive goals to a plan your teams can deliver": used on Home and Services. */
+interface Props {
+  /** Heading level, to fit the page outline. */
+  level?: 'h2' | 'h3';
+  id?: string;
+}
+const { level = 'h2', id = 'approach-title' } = Astro.props;
+const Heading = level;
+const Sub = level === 'h2' ? 'h3' : 'h4';
+---
+
+<div class="approach">
+  <div class="approach__copy">
+    <p class="eyebrow">
+      <span class="eyebrow__bar" aria-hidden="true"></span>
+      <span>{approach.eyebrow}</span>
+    </p>
+    <Heading class="approach__heading" id={id}>{approach.heading}</Heading>
+    {approach.paragraphs.map((p) => <p class="approach__p">{p}</p>)}
+  </div>
+  <ol class="approach__points" role="list">
+    {
+      approach.points.map((pt, i) => (
+        <li>
+          <span class="approach__num" aria-hidden="true">
+            {String(i + 1).padStart(2, '0')}
+          </span>
+          <Sub class="approach__title">{pt.title}</Sub>
+          <p>{pt.body}</p>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<style>
+  .approach {
+    display: grid;
+    gap: clamp(2.5rem, 2rem + 3vw, 5rem);
+  }
+
+  @media (min-width: 64rem) {
+    .approach {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+      align-items: start;
+    }
+  }
+
+  .approach__copy {
+    display: grid;
+    gap: var(--space-5);
+  }
+
+  .approach__heading {
+    font-size: var(--step-3);
+    max-width: 20ch;
+  }
+
+  .approach__p {
+    max-width: 38rem;
+    font-size: var(--step-1);
+    line-height: 1.6;
+    color: var(--ink-muted);
+  }
+
+  .approach__p:first-of-type {
+    color: var(--ink);
+  }
+
+  .approach__points {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .approach__points li {
+    display: grid;
+    grid-template-columns: 2.5rem 1fr;
+    gap: 0.25rem 0.75rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .approach__num {
+    grid-row: span 2;
+    padding-top: 0.35rem;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--olive-700);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .approach__title {
+    font-size: 1.3rem;
+  }
+
+  .approach__points p {
+    color: var(--ink-muted);
+  }
+</style>

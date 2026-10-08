@@ -1,0 +1,163 @@
+---
+import { Picture } from 'astro:assets';
+import { work, workHref, type WorkItem } from '../content/work';
+import Arrow from './Arrow.astro';
+import observatory from '../assets/work/observatory.png';
+import coldpath from '../assets/work/coldpath.png';
+import bee from '../assets/work/bee.png';
+
+/** A case study or build as a card. The title link covers the whole card. */
+interface Props {
+  item: WorkItem;
+  /** Heading level for the card title, to fit the page outline. */
+  level?: 'h2' | 'h3';
+}
+const { item, level = 'h3' } = Astro.props;
+const images = { observatory, coldpath, bee };
+const Heading = level;
+---
+
+<article class:list={['wc', item.image ? 'wc--image' : 'wc--stat']}>
+  {
+    item.image && (
+      <div class="wc__media">
+        <Picture
+          src={images[item.image]}
+          alt=""
+          formats={['avif', 'webp']}
+          widths={[480, 720, 960]}
+          sizes="(min-width: 64rem) 400px, 100vw"
+          quality={72}
+          fallbackFormat="webp"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+    )
+  }
+  <div class="wc__body">
+    <p class="label">{item.kicker}</p>
+    <Heading class="wc__title">
+      <a href={workHref(item.slug)}>{item.title}</a>
+    </Heading>
+    <p class="wc__summary">{item.summary}</p>
+    {
+      item.stat && (
+        <p class="wc__stat">
+          <span class="wc__stat-value">{item.stat}</span>
+          <span>{item.statLabel}</span>
+        </p>
+      )
+    }
+    <p class="wc__more" aria-hidden="true">
+      {item.kind === 'client' ? work.readMore : work.viewProject}
+      <Arrow />
+    </p>
+  </div>
+</article>
+
+<style>
+  .wc {
+    position: relative;
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius-l);
+    background: var(--white);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.4s var(--ease-out),
+      transform 0.4s var(--ease-out);
+  }
+
+  .wc:hover,
+  .wc:focus-within {
+    border-color: var(--rule-strong);
+    box-shadow: var(--shadow-frame);
+    transform: translateY(-3px);
+  }
+
+  .wc__media {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--forest-950);
+    border-bottom: 1px solid var(--rule);
+  }
+
+  .wc__media :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top left;
+    transition: transform 0.8s var(--ease-out);
+  }
+
+  .wc:hover .wc__media :global(img) {
+    transform: scale(1.03);
+  }
+
+  .wc__body {
+    display: grid;
+    grid-template-rows: auto auto 1fr auto auto;
+    gap: var(--space-3);
+    padding: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+  }
+
+  .wc__title {
+    font-size: var(--step-2);
+  }
+
+  .wc__title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .wc__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-l);
+  }
+
+
+  .wc__summary {
+    color: var(--ink-muted);
+  }
+
+  .wc__stat {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--rule);
+    font-size: 0.9375rem;
+    font-weight: 500;
+    line-height: 1.35;
+  }
+
+  .wc__stat-value {
+    flex: none;
+    font-family: var(--font-serif);
+    font-size: 2.5rem;
+    line-height: 1;
+    color: var(--forest-900);
+  }
+
+  .wc__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--forest-900);
+  }
+
+  .wc__more :global(.arrow) {
+    transition: transform var(--dur-med) var(--ease-out);
+  }
+
+  .wc:hover .wc__more :global(.arrow) {
+    transform: translateX(4px);
+  }
+</style>

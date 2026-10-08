@@ -1,0 +1,86 @@
+---
+/**
+ * The opening band of every inner page: eyebrow, the page h1 and a lede, with
+ * an optional visual (slot="visual") and optional tags or a back link
+ * (slot="before") above the eyebrow.
+ */
+interface Props {
+  eyebrow: string;
+  heading: string;
+  lede?: string;
+}
+const { eyebrow, heading, lede } = Astro.props;
+const hasVisual = Astro.slots.has('visual');
+---
+
+<section class:list={['page-hero', hasVisual && 'page-hero--visual']} aria-labelledby="page-title">
+  <div class="container page-hero__grid">
+    <div class="page-hero__copy">
+      <slot name="before" />
+      <p class="eyebrow">
+        <span class="eyebrow__bar" aria-hidden="true"></span>
+        <span>{eyebrow}</span>
+      </p>
+      <h1 id="page-title">{heading}</h1>
+      {lede && <p class="lede">{lede}</p>}
+      <slot name="after" />
+    </div>
+    {
+      hasVisual && (
+        <div class="page-hero__visual">
+          <slot name="visual" />
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  .page-hero {
+    position: relative;
+    padding-block: clamp(3rem, 2rem + 5vw, 6rem) clamp(2.5rem, 2rem + 3vw, 4.5rem);
+    border-bottom: 1px solid var(--rule);
+    isolation: isolate;
+  }
+
+  .page-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(var(--sage-300) 1px, transparent 1.3px);
+    background-size: 28px 28px;
+    background-position: -14px -14px;
+    opacity: 0.45;
+    mask-image: linear-gradient(180deg, #000 0%, transparent 95%);
+  }
+
+  .page-hero__grid {
+    display: grid;
+    gap: clamp(2rem, 1.5rem + 3vw, 4rem);
+    align-items: center;
+  }
+
+  .page-hero__copy {
+    display: grid;
+    gap: var(--space-5);
+    justify-items: start;
+  }
+
+  .page-hero h1 {
+    max-width: 18ch;
+    font-size: clamp(2.25rem, 1.4rem + 3.4vw, 4rem);
+  }
+
+  .page-hero__visual {
+    width: 100%;
+    max-width: 30rem;
+    justify-self: center;
+  }
+
+  @media (min-width: 64rem) {
+    .page-hero--visual .page-hero__grid {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    }
+  }
+</style>
