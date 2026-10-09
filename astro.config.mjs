@@ -12,9 +12,10 @@ export default defineConfig({
   compressHTML: true,
   devToolbar: { enabled: false },
   build: {
-    // Keep CSS in files so the Content-Security-Policy can stay strict and
-    // the browser can cache styles across visits.
-    inlineStylesheets: 'never',
+    // Inline each page's CSS (about 6 to 10 KB gzipped) so nothing blocks
+    // the first paint. The Content-Security-Policy already allows inline
+    // styles (style-src 'unsafe-inline'); it is scripts that must stay external.
+    inlineStylesheets: 'always',
   },
   vite: {
     build: {

@@ -1,0 +1,94 @@
+# Cross-repo freshness pull — install into the SITE repo
+# (the one behind davehynes.netlify.app):
+#
+#     copy → .github/workflows/coldpath-freshness-pull.yml
+#
+# Chain: the public `coldpath` repo runs the live EPA RMP connector every
+# Monday 06:00 UTC (its site-freshness.yml) and commits
+# website/data/freshness.json. This workflow runs Mondays 08:00 UTC,
+# fetches that file over raw.githubusercontent.com (public repo — no
+# secrets needed), VALIDATES it, and commits it to the case study's
+# data/ path. Netlify rebuilds on push; the page's badge then reads
+# "pulled from EPA N days ago".
+#
+# Failure behaviour is deliberate: if the upstream fetch fails, or the JSON
+# is invalid/implausible/missing its CC BY-SA licence line, this workflow
+# exits non-zero and commits NOTHING — the site keeps serving the last good
+# snapshot and the badge honestly shows its age.
+#
+# If the case study lives somewhere other than public/work/coldpath/ in your
+# site repo, edit DEST below. If your Netlify site deploys by drag-and-drop
+# rather than git, this workflow updates the repo but you must redeploy.
+
+name: coldpath-freshness-pull
+
+on:
+  schedule:
+    - cron: "0 8 * * 1"        # Mondays 08:00 UTC — 2h after the upstream pull
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: coldpath-freshness
+  cancel-in-progress: false
+
+env:
+  SRC_URL: "https://raw.githubusercontent.com/dhynesmnk-cyber/coldpath/main/website/data/freshness.json"
+  DEST: "public/work/coldpath/data/freshness.json"
+
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch upstream snapshot
+        run: |
+          set -euo pipefail
+          curl -fsSL --retry 3 --retry-delay 10 "$SRC_URL" -o /tmp/freshness.json
+          echo "fetched $(wc -c < /tmp/freshness.json) bytes"
+
+      - name: Validate (fail closed — never publish a bad badge)
+        run: |
+          python3 - <<'PY'
+          import json, sys, datetime as dt
+          try:
+              d = json.load(open('/tmp/freshness.json'))
+          except Exception as e:
+              sys.exit(f'refusing: invalid JSON ({e})')
+          required = ('pulled_at', 'accounts', 'sites', 'states')
+          missing = [k for k in required if k not in d or d[k] is None]
+          if missing:
+              sys.exit(f'refusing: missing keys {missing}')
+          try:
+              dt.date.fromisoformat(str(d['pulled_at']))
+          except ValueError:
+              sys.exit(f"refusing: bad pulled_at {d['pulled_at']!r}")
+          for k in ('accounts', 'sites', 'states'):
+              if not isinstance(d[k], int) or not (1 <= d[k] <= 100000):
+                  sys.exit(f'refusing: implausible {k}={d[k]!r}')
+          if 'CC BY-SA' not in str(d.get('license', '')):
+              sys.exit('refusing: CC BY-SA licence attribution missing')
+          print(f"valid: pulled {d['pulled_at']} · {d['accounts']} accounts / {d['sites']} sites / {d['states']} states")
+          PY
+
+      - name: Install
+        run: |
+          set -euo pipefail
+          mkdir -p "$(dirname "$DEST")"
+          cp /tmp/freshness.json "$DEST"
+
+      - name: Commit if changed
+        run: |
+          git config user.name  "coldpath-freshness-bot"
+          git config user.email "actions@github.com"
+          git add "$DEST"
+          if git diff --cached --quiet; then
+            echo "Snapshot unchanged; nothing to commit."
+          else
+            git commit -m "coldpath: weekly EPA RMP freshness $(date -u +%F)"
+            git push
+          fi

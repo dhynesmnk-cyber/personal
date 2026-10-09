@@ -3,35 +3,35 @@
 export const about = {
   title: 'About',
   description:
-    'David Hynes Consulting is an AI strategy and adoption practice based in Melbourne, founded by David Hynes, working with executive teams in Australia and the United States.',
+    'David Hynes Consulting is an AI strategy and adoption practice founded by David Hynes, based in Melbourne and working with executive teams in Australia and the United States.',
   hero: {
     eyebrow: 'About',
-    heading: 'Practical AI, led by people who have run the work.',
-    lede: 'David Hynes Consulting is an AI strategy and adoption practice based in Melbourne, working with executive teams in Australia and the United States.',
+    heading: 'Practical AI, from someone who has run the work.',
+    lede: 'David Hynes Consulting is my AI strategy and adoption practice. I am based in Melbourne and work with executive teams in Australia and the United States.',
   },
   founder: {
     eyebrow: 'Founder',
     name: 'David Hynes',
     role: 'Founder and Principal',
     paragraphs: [
-      'David builds AI systems and leads their adoption. He works where executive intent meets day-to-day operations: turning goals into governed systems, then making sure the people who use them actually do.',
-      'Before founding the practice he ran businesses: building a marketplace, leading a team of more than 20, holding margins and running operations at an AI-native startup. That is why our work starts from budgets, timelines and the realities of the people doing the work.',
+      'I build AI systems and lead their adoption. My work sits where executive goals meet day-to-day operations: I turn those goals into governed systems, then make sure the people they are built for actually use them.',
+      'Before founding the practice I ran businesses. I built a marketplace, led a team of more than 20, managed margins and ran operations at an AI-native startup. That is why my work starts from budgets, timelines and the realities of the people doing the job.',
     ],
-    quote: "I've seen too many tools look great in a demo and get ignored a week later. Everything we build is designed to survive a normal working week.",
+    quote: "I've seen too many tools shine in a demo and sit unused a week later. Everything I build is designed for a normal working week.",
   },
-  principlesHeading: 'How we work',
+  principlesHeading: 'Principles I work by',
   principles: [
     {
-      title: 'Constraints come first',
-      body: 'Budgets, timelines and margins decide what is possible. We start there, not with the model.',
+      title: 'Start with the constraints',
+      body: 'Budgets, timelines and margins decide what is possible. I start there, then choose the model.',
     },
     {
-      title: 'People decide adoption',
-      body: 'Busy teams route around tools that slow them down. If it does not make the job easier, it will not last.',
+      title: 'Design for the people using it',
+      body: 'Busy teams adopt tools that make their day easier. Every design decision is tested against that.',
     },
     {
-      title: 'Risk is commercial',
-      body: 'A wrong answer costs money and trust. Every system we build checks its work before anything reaches a client.',
+      title: 'Build trust into every output',
+      body: 'A wrong answer costs money and goodwill, so every system I build checks its work before anything reaches a client.',
     },
   ],
   experienceHeading: 'Experience',
@@ -41,6 +41,12 @@ export const about = {
       org: 'Wärtsilä (USA)',
       role: 'AI Systems and Strategy Advisor',
       body: 'AI systems for market intelligence and executive operations, working with the Head of Business Development.',
+    },
+    {
+      when: '2026',
+      org: 'Energy services company, US (name withheld)',
+      role: 'Account intelligence engine',
+      body: 'Designed and built Coldpath, which turns a public regulatory register into a ranked, evidence-backed list of untapped accounts.',
     },
     {
       when: 'Recent',
@@ -58,13 +64,13 @@ export const about = {
       when: 'Jan 2025 to Jul 2025',
       org: 'VAIDA.ai',
       role: 'Founder Assistant and Chief of Staff',
-      body: 'Embedded AI into operations at an AI-native consulting startup in commercial real estate. Internal systems cut manual effort by 40 percent while preserving decision quality, in a regulated space.',
+      body: 'Embedded AI into operations at an AI-native consulting startup in commercial real estate. The internal systems I built cut manual effort by 40 percent while preserving decision quality, in a regulated space.',
     },
     {
       when: '2018 to now',
       org: 'Chicken and Potatoes Consulting',
       role: 'Consultant',
-      body: 'Advising small and medium businesses on operations and lean tech, building free tools, and coaching founders to adopt tools that solve a real problem.',
+      body: 'Advising small and medium businesses on operations and lean technology, building free tools, and coaching founders to adopt tools that solve a real problem.',
     },
   ],
   earlier: {

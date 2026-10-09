@@ -22,76 +22,71 @@ export interface Logo {
 
 export interface LogoRow {
   label: string;
+  /** Visual weight: the top tier gets the largest marks. */
+  tier: 1 | 2 | 3;
   logos: Logo[];
 }
 
-const lab = (id: string, name: string, file = id): Logo => ({ id, name, source: 'lobehub', file });
-const tool = (id: string, name: string, file = id): Logo => ({ id, name, source: 'simpleicons', file });
+const lobe = (id: string, name: string, file = id): Logo => ({ id, name, source: 'lobehub', file });
+const simple = (id: string, name: string, file = id): Logo => ({ id, name, source: 'simpleicons', file });
 
+/**
+ * Three tiers, in order of recognition: the frontier labs, the tools built on
+ * them, then the infrastructure underneath. Keep each tier to names a client
+ * would know; small or specialist libraries belong in a case study, not here.
+ */
 export const logoWall = {
-  heading: 'Models and tools we work with',
-  note: 'Logos are trademarks of their owners, shown to indicate the models and tools we use, not partnerships.',
+  heading: 'Models and tools I work with',
+  note: 'Logos are trademarks of their owners, shown to indicate the models and tools I use, not partnerships.',
   pause: 'Pause logos',
   play: 'Play logos',
   rows: [
     {
-      label: 'Frontier AI labs and models',
+      label: 'Frontier AI labs',
+      tier: 1,
       logos: [
-        lab('anthropic', 'Anthropic'),
-        lab('openai', 'OpenAI'),
-        lab('deepmind', 'Google DeepMind'),
-        lab('gemini', 'Gemini'),
-        lab('meta', 'Meta'),
-        lab('mistral', 'Mistral AI'),
-        lab('xai', 'xAI'),
-        lab('deepseek', 'DeepSeek'),
-        lab('qwen', 'Qwen'),
-        lab('cohere', 'Cohere'),
-        lab('microsoft', 'Microsoft'),
-        lab('aws', 'AWS'),
-        lab('nvidia', 'NVIDIA'),
-        lab('perplexity', 'Perplexity'),
-        lab('huggingface', 'Hugging Face'),
+        lobe('anthropic', 'Anthropic'),
+        lobe('openai', 'OpenAI'),
+        lobe('deepmind', 'Google DeepMind'),
+        lobe('gemini', 'Gemini'),
+        lobe('meta', 'Meta'),
+        lobe('mistral', 'Mistral AI'),
+        lobe('xai', 'xAI'),
+        lobe('deepseek', 'DeepSeek'),
+        lobe('cohere', 'Cohere'),
+        lobe('perplexity', 'Perplexity'),
+        lobe('huggingface', 'Hugging Face'),
       ],
     },
     {
-      label: 'AI, automation and data',
+      label: 'Tools',
+      tier: 2,
       logos: [
-        tool('claude', 'Claude'),
-        tool('zapier', 'Zapier'),
-        tool('make', 'Make'),
-        tool('notion', 'Notion'),
-        tool('airtable', 'Airtable'),
-        tool('replit', 'Replit'),
-        tool('supabase', 'Supabase'),
-        tool('postgresql', 'PostgreSQL'),
-        tool('sqlite', 'SQLite'),
-        tool('drizzle', 'Drizzle'),
-        tool('upstash', 'Upstash'),
-        tool('stripe', 'Stripe'),
-        tool('leaflet', 'Leaflet'),
-        tool('openstreetmap', 'OpenStreetMap'),
+        simple('claude', 'Claude'),
+        simple('github', 'GitHub'),
+        simple('notion', 'Notion'),
+        simple('zapier', 'Zapier'),
+        simple('make', 'Make'),
+        simple('airtable', 'Airtable'),
+        simple('replit', 'Replit'),
+        simple('python', 'Python'),
+        simple('typescript', 'TypeScript'),
+        simple('react', 'React'),
+        simple('nextdotjs', 'Next.js'),
       ],
     },
     {
-      label: 'Engineering and delivery',
+      label: 'Infrastructure',
+      tier: 3,
       logos: [
-        tool('typescript', 'TypeScript'),
-        tool('python', 'Python'),
-        tool('nodedotjs', 'Node.js'),
-        tool('deno', 'Deno'),
-        tool('nextdotjs', 'Next.js'),
-        tool('astro', 'Astro'),
-        tool('react', 'React'),
-        tool('tailwindcss', 'Tailwind CSS'),
-        tool('vite', 'Vite'),
-        tool('vitest', 'Vitest'),
-        tool('eslint', 'ESLint'),
-        tool('git', 'Git'),
-        tool('github', 'GitHub'),
-        tool('githubactions', 'GitHub Actions'),
-        tool('docker', 'Docker'),
-        tool('netlify', 'Netlify'),
+        lobe('nvidia', 'NVIDIA'),
+        lobe('aws', 'AWS'),
+        lobe('microsoft', 'Microsoft'),
+        simple('supabase', 'Supabase'),
+        simple('postgresql', 'PostgreSQL'),
+        simple('docker', 'Docker'),
+        simple('netlify', 'Netlify'),
+        simple('stripe', 'Stripe'),
       ],
     },
   ] satisfies LogoRow[],

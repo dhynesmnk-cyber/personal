@@ -1,0 +1,274 @@
+---
+import Article from '../../layouts/Article.astro';
+import Arrow from '../../components/Arrow.astro';
+import { insights } from '../../content/insights';
+
+const meta = insights.articles.find((a) => a.href === '/insights/the-gate-is-the-product/')!;
+---
+
+<Article
+  title={meta.title}
+  description="Clients do not buy the model. They buy confidence that the system knows when it is wrong. A field note from the Coldpath build, with six rules for putting gates in front of your AI."
+  eyebrow="Field note: AI governance and adoption"
+  lede="Every AI vendor says their system is accurate. Very few will show you the code that stops it when it is wrong. That code, the gate, is the part a business can actually evaluate, and the part that earns adoption."
+  date={meta.date}
+  published="2026-10-08"
+  readingTime={meta.readingTime}
+  context="From the Coldpath build"
+  image="/insights/the-gate-is-the-product/og.png"
+  imageAlt="The gate is the product: a field note on AI governance and adoption."
+>
+  <h2>Two bugs that showed me what I am really selling</h2>
+  <p>
+    On a cold-chain prospecting engine I built this year, the public regulator data contained a facility declaring 89 million
+    pounds of ammonia. The median filer declares 20,000. It was a marine terminal with a units error, and a simple scoring pass
+    had just made it the top "prospect" in America.
+  </p>
+  <p>
+    A second bug was quieter and worse. A fuzzy name matcher scored a genuine prospect, the cold-chain subsidiary of a grocery
+    group, 0.79 similar to an existing customer whose name was four characters away. The engine suppressed it as a customer.
+    No error, no queue item. One account short, and nobody would ever have known.
+  </p>
+  <p>
+    No model caught either bug. Both were caught by rules written before the model ran: a distribution gate that refuses
+    anything beyond ten times the 99th percentile, and a matching rule that requires a shared distinctive word before anything
+    is suppressed. Both bugs now live on as named regression tests. If either gate ever stops catching its bug, the build fails.
+  </p>
+  <p>
+    Clients do not buy the model. They buy the confidence that when the model is wrong, and it will be, the system knows, says
+    so and stops.
+  </p>
+
+  <h2>Adoption is a trust problem dressed as a design problem</h2>
+  <p>
+    Operations taught me this before AI did. A system that adds two minutes to a shift is quietly ignored by Friday. An AI
+    system that sends one wrong message to one customer is ignored by Friday and reported by Monday. The failure is rarely the
+    interface. It is the first bad output anyone remembers.
+  </p>
+  <p>
+    "95% accurate" is not something a sales leader can act on. Which 95? Accurate about what, measured when, against whose
+    data? What an executive <em>can</em> use is a list of the things the system refused to do this week, with reasons. That list
+    is readable and open to debate. That debate is the governance meeting you were going to have anyway, except now it has
+    evidence in it.
+  </p>
+
+  <h2>What a gate actually is</h2>
+  <p>
+    A gate is a pure function. It takes a record and its context, and returns pass, warn or refuse, with a reason. There is no
+    database, network or model inside it. Because it is pure, it can be tested like any other function: the cold-chain engine
+    has 49 of them, each with test cases, all running on every change.
+  </p>
+  <p class="verdicts">
+    <span class="v v--pass">Pass</span>
+    <span class="v v--warn">Warn</span>
+    <span class="v v--refuse">Refuse, with a reason</span>
+    <span class="verdicts__note">and the reason stays with the record</span>
+  </p>
+  <p>Three properties keep gates dependable under pressure.</p>
+  <ul class="points" role="list">
+    <li>
+      <strong>Refusals fail closed and stay visible.</strong> Nothing is silently dropped. A refused record lands in a review queue
+      with its reason attached, so silence is never mistaken for success.
+    </li>
+    <li>
+      <strong>Similarity never decides.</strong> A fuzzy match can reorder a person's queue. It can never suppress, confirm or export.
+      Once judgement is allowed to flip a flag, you no longer have a gate. You have a coin toss with extra steps.
+    </li>
+    <li>
+      <strong>The machine ranks and drafts. A person confirms.</strong> In the cold-chain work this was the client's policy, not mine.
+      Building it into the export filter made it real in a way a guideline on a slide never could.
+    </li>
+  </ul>
+  <blockquote class="pull">
+    <p>Accuracy is a number. Trust is a structure. Only one of them survives a Friday afternoon.</p>
+  </blockquote>
+  <p>
+    Test the guardrail, not just the rule. The engine's tenant isolation ships with a control test that confirms a misconfigured
+    database role <em>does</em> leak across tenants. If that test ever stops seeing the leak, every isolation test above it is
+    meaningless. A guardrail without a control test is a hope with syntax.
+  </p>
+
+  <h2>Six rules for putting gates in front of your AI</h2>
+  <ol class="rules" role="list">
+    <li>
+      <h3>Name your worst failure, then make it a regression test.</h3>
+      <p>
+        Not an anecdote in a retrospective, but a build that fails if the failure returns. The 89-million-pound facility and the
+        four-character near-miss are both tests now.
+      </p>
+    </li>
+    <li>
+      <h3>Every refusal carries a reason, and nothing is deleted.</h3>
+      <p>Suppress, quarantine or queue, but never make a record vanish. Your audit trail should be a query, not an archaeology project.</p>
+    </li>
+    <li>
+      <h3>People confirm anything that leaves the building.</h3>
+      <p>AI can rank work, draft content and queue reviews. The confirm flag belongs to a person with a name and a job.</p>
+    </li>
+    <li>
+      <h3>Prove the guardrail with a control test.</h3>
+      <p>Write the test that fails loudly when the protection silently disappears. Silent failure is the one failure you cannot afford.</p>
+    </li>
+    <li>
+      <h3>Keep gates portable.</h3>
+      <p>
+        Pure functions with no database, network or vendor inside. Your evaluation layer should outlast the platform migration,
+        the vendor change and the audit.
+      </p>
+    </li>
+    <li>
+      <h3>Label what is pre-built and what is live.</h3>
+      <p>Being open about what is automated is the cheapest trust signal you have. Hiding it is the most expensive.</p>
+    </li>
+  </ol>
+
+  <div class="callout">
+    <p>
+      All six rules are running somewhere you can test them. The Coldpath case study includes a live demo with 39 gates running in
+      your browser, refusals and all.
+    </p>
+    <a class="text-link" href="/work/coldpath/">Read the case study<Arrow /></a>
+  </div>
+
+  <h2>The gate is the part you can evaluate</h2>
+  <p>
+    You cannot review a frontier model's weights. You can review 49 rules with names, tests and reasons. When a procurement team
+    asks "how do we know it won't embarrass us?", a list of gates is an answer. A benchmark is a brochure.
+  </p>
+  <p>
+    Build the gate first. It will feel like overhead until the week it isn't, and then it will be the reason people still trust
+    the tool.
+  </p>
+  <p class="closing">The gate is the product. Everything else is a demo.</p>
+</Article>
+
+<style>
+  .verdicts {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: var(--radius-m);
+    background: var(--paper-2);
+  }
+
+  .verdicts .v {
+    padding: 0.15rem 0.6rem;
+    border-radius: var(--radius-s);
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .v--pass {
+    background: var(--moss-100);
+    color: var(--forest-900);
+  }
+
+  .v--warn {
+    background: var(--warn-tint);
+    color: var(--warn);
+  }
+
+  .v--refuse {
+    background: var(--refuse-tint);
+    color: var(--refuse);
+  }
+
+  .verdicts__note {
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+
+  .points {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
+  }
+
+  .points li {
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--forest-700);
+    color: var(--ink-muted);
+  }
+
+  .points strong {
+    color: var(--ink);
+  }
+
+  .pull {
+    margin: var(--space-7) 0;
+    padding: var(--space-5) 0;
+    border-block: 1px solid var(--rule-strong);
+  }
+
+  .pull p {
+    font-family: var(--font-serif);
+    font-size: var(--step-3);
+    line-height: 1.2;
+    letter-spacing: -0.015em;
+  }
+
+  .rules {
+    display: grid;
+    gap: 0;
+    counter-reset: rule;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .rules li {
+    position: relative;
+    display: grid;
+    gap: 0.35rem;
+    padding: 1.25rem 0 1.25rem 3rem;
+    border-bottom: 1px solid var(--rule);
+    counter-increment: rule;
+  }
+
+  .rules li::before {
+    content: counter(rule, decimal-leading-zero);
+    position: absolute;
+    left: 0;
+    top: 1.45rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--olive-700);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .rules h3 {
+    font-size: var(--step-1);
+    line-height: 1.3;
+  }
+
+  .rules p {
+    font-size: var(--step-0);
+    color: var(--ink-muted);
+  }
+
+  .callout {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: start;
+    margin-block: var(--space-7);
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2rem);
+    border-radius: var(--radius-l);
+    background: var(--moss-100);
+  }
+
+  .callout p {
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    line-height: 1.35;
+  }
+
+  .closing {
+    margin-top: var(--space-7);
+    font-family: var(--font-serif);
+    font-size: var(--step-2);
+    font-style: italic;
+    color: var(--forest-900);
+  }
+</style>

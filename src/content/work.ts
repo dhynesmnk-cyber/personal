@@ -1,24 +1,29 @@
-/** Work: the index page, the two client case studies and three of our own builds. */
+/** Work: the index page, the client case studies and my own builds. Coldpath's full case study is in coldpath.ts. */
 
 import { LINKS } from './brand';
 
 export type Step = { name: string; gate?: boolean };
-export type ImageKey = 'observatory' | 'coldpath' | 'bee';
+export type ImageKey = 'observatory' | 'bee';
 
 export const work = {
   title: 'Work',
   description:
-    'Client case studies and our own builds: enterprise AI advisory for a Tier 1 professional services firm, AI systems for Wärtsilä (USA), and three governed products.',
+    'Client case studies and my own builds: AI systems for Wärtsilä (USA), enterprise advisory for a Tier 1 professional services firm, the Coldpath account intelligence engine, and two governed public projects.',
   hero: {
     eyebrow: 'Work',
-    heading: 'Client work, and the systems we run ourselves.',
-    lede: 'Two client engagements and three of our own builds. Every one follows the same rules: clear goals, clear owners, and checks before anything reaches a decision-maker.',
+    heading: 'Client results, and the systems I run myself.',
+    lede: 'Three client engagements and two of my own builds. Each one follows the same discipline: clear goals, named owners and agreed checks before anything reaches a decision-maker.',
   },
   clientHeading: 'Client engagements',
-  buildsEyebrow: 'Our own builds',
+  buildsEyebrow: 'My own builds',
   buildsHeading: 'Transparent by design.',
   buildsIntro:
-    'Every system we build shows its working: where each answer came from, what was checked, and who signs off. These three projects are our own, and they run on exactly the rules we set for clients.',
+    'Every system I build shows its working: where each answer came from, what was checked and who signed it off. These two projects are my own, and they meet the same standards I set for clients.',
+  transparency: [
+    { title: 'Every answer is traceable', body: 'Each output links back to the source it came from.' },
+    { title: 'Checks come before decisions', body: 'Nothing reaches a decision-maker until it passes the agreed tests.' },
+    { title: 'A named person makes the hard calls', body: 'Anything uncertain goes to an accountable owner for a decision.' },
+  ],
   readMore: 'Read the case study',
   viewProject: 'See the project',
   prev: 'Previous',
@@ -35,37 +40,37 @@ export const tier1 = {
   note: 'Client not named',
   summary: 'Turned executive AI goals into a governed tooling strategy, then designed an acquisition analysis engine.',
   description:
-    "How we turned a Tier 1 professional services firm's AI goals into a governed tooling strategy and an acquisition analysis engine that cut project lead review time by 60 percent.",
+    "How I turned a Tier 1 professional services firm's AI goals into a governed tooling strategy and an acquisition analysis engine that cut project lead review time by 60 percent.",
   problem: {
-    title: 'The challenge',
-    body: 'Leadership had set clear goals for AI. What was missing was a plan the delivery teams could actually execute, and the governance that would let internal staff use AI tools safely from day one.',
+    title: 'The starting point',
+    body: 'Leadership had set clear goals for AI. The next step was a plan the delivery teams could carry out, and governance that let staff use AI tools with confidence from day one.',
   },
   solution: {
-    title: 'What we did',
-    body: 'We turned those goals into a workable strategy: which tools to use, the evaluation gates each one had to pass, and the guardrails around them, with an owner and a test for every tool. We then designed an acquisition analysis engine that collates target data into structured executive breakdowns.',
+    title: 'What I did',
+    body: 'I turned those goals into a working strategy: which tools to use, the evaluation gates each one had to pass and the guardrails around them, with an owner and a test for every tool. I then designed an acquisition analysis engine that gathers target data into structured executive breakdowns.',
   },
   result: {
     title: 'The result',
-    body: "Project leads now spend far less time reviewing acquisition analysis, and the firm's evidentiary and compliance standards were maintained throughout.",
+    body: 'Project leads now spend far less time reviewing acquisition analysis, and the firm kept its evidence and compliance standards throughout.',
     stat: '60%',
-    statLabel: 'less project lead review time, with evidentiary and compliance standards maintained',
-    statShort: 'less project lead review time',
+    statLabel: 'less review time for project leads, with evidence and compliance standards maintained',
+    statShort: 'less review time for project leads',
   },
   diagram: {
     title: 'How the acquisition analysis engine works',
     caption: 'Illustrative architecture. Client systems and data are not shown.',
     stages: [
-      { name: 'Collate', body: 'Target data is pulled from approved sources into one case file, with the source kept on every item.' },
-      { name: 'Structure', body: 'Facts are extracted into a fixed format, so every breakdown reads the same way.' },
+      { name: 'Gather', body: 'Target data comes from approved sources into one case file, and every item keeps its source.' },
+      { name: 'Structure', body: 'Facts go into a fixed format, so every breakdown reads the same way.' },
       {
         name: 'Evaluation gate',
-        body: 'Checks source coverage, consistency and compliance rules before anything moves on.',
+        body: 'Source coverage, consistency and compliance rules are checked before anything moves on.',
         gate: true,
       },
       { name: 'Executive breakdown', body: 'A structured summary covering the target, the numbers, the risks and the open questions.' },
-      { name: 'Lead review', body: 'The project lead reviews and signs off, faster, because the evidence is already in order.' },
+      { name: 'Lead review', body: 'The project lead reviews and signs off quickly, because the evidence is already in order.' },
     ],
-    fallback: { name: 'Human review', body: 'Anything that fails the gate goes to a person, gets fixed and is checked again.' },
+    fallback: { name: 'Human review', body: 'Anything that fails the gate goes to a person, is corrected and is checked again.' },
     guardrailsTitle: 'Governance guardrails at every stage',
     guardrails: ['Role-based access', 'Audit trail', 'Evidence standards', 'Compliance rules', 'Human sign-off'],
   },
@@ -91,10 +96,10 @@ export const wartsila = {
   stat: '65%',
   statShort: 'less daily admin for the Head of Business Development',
   intro:
-    'Wärtsilä supplies utility-scale power plants and microgrids to meet the surging energy demands of data centre development in the United States. Their Head of Business Development engaged us to build AI systems that speed up market intelligence and executive operations.',
+    'Wärtsilä supplies utility-scale power plants and microgrids to meet the fast-growing energy needs of data centre development in the United States. I work with their Head of Business Development, building AI systems that speed up market intelligence and executive operations.',
   intel: {
     title: 'Market intelligence',
-    body: 'A multi-agent research pipeline that monitors, qualifies and tracks public energy proposals and grid interconnection requirements for US data centre developments. It turns unstructured public infrastructure data into a qualified pipeline of power opportunities, directly supporting the commercial strategy for large-scale engine power plants.',
+    body: 'A multi-agent research pipeline that monitors, qualifies and tracks public energy proposals and grid interconnection requirements for US data centre developments. It turns unstructured public infrastructure data into a qualified pipeline of power opportunities, which feeds directly into the commercial strategy for large-scale engine power plants.',
     pipelineLabel: 'Market intelligence pipeline, in order',
     pipeline: [
       { name: 'Public energy proposals' },
@@ -121,8 +126,20 @@ export const wartsila = {
     output: 'Conference materials',
   },
   bridge:
-    'The physical limits of AI show up here first: power, grid connections and timing. It is the same story our data centre research tells.',
-  bridgeLink: { label: 'Read our research', href: '/insights/' },
+    'The physical limits of AI show up here first: power, grid connections and timing. My data centre research tells the same story.',
+  bridgeLink: { label: 'Read the research', href: '/insights/#research' },
+};
+
+export const coldpathCase = {
+  slug: 'coldpath',
+  kicker: 'Account intelligence',
+  title: 'Coldpath',
+  note: 'Client name withheld',
+  summary: 'One public register turned into a ranked list of untapped accounts, with every decision checked by a rule or a person.',
+  description:
+    'How a public EPA register became 112 sales accounts nobody was calling, and the two defects that were caught before launch. Interactive case study with a live demo.',
+  stat: '112',
+  statShort: 'untapped accounts, absent from the CRM',
 };
 
 /* ------------------------------------------------------------------- builds */
@@ -157,10 +174,10 @@ export const builds: Build[] = [
     ],
     governanceTitle: 'How it stays trustworthy',
     governance: [
-      '93 sites and 138 organisations, with every row checked and sourced',
+      '93 sites and 138 organisations, every row checked and sourced',
       'Every source document archived and fingerprinted, so it cannot be quietly changed',
       'Each claim graded on how strong its evidence is',
-      'Private information only visible to the people allowed to see it',
+      'Private information visible only to the people allowed to see it',
       'Automated checks, including accessibility, before any change goes live',
     ],
     pipelineLabel: 'From source to publication',
@@ -180,42 +197,6 @@ export const builds: Build[] = [
     },
   },
   {
-    slug: 'coldpath',
-    kicker: 'AI-assisted infrastructure registry',
-    title: 'Coldpath',
-    summary: 'Public regulatory filings turned into a researched prospect list, with a person in the loop for anything uncertain.',
-    description:
-      'Coldpath turns public regulatory filings into a researched, attributable prospect list for B2B lead generation in the cold chain.',
-    body: [
-      'An AI-assisted registry of cold-chain infrastructure assets for B2B lead generation. It turns public regulatory filings into a researched prospect list where every entry shows where it came from.',
-      "The hard part isn't collecting the data. It's deciding what can be trusted, what needs a person to look at it, and what must never be used for outreach.",
-    ],
-    governanceTitle: 'How it stays trustworthy',
-    governance: [
-      '1,382 facilities from public EPA filings, matched into accounts across 43 states',
-      'Existing customers are recognised and never contacted by mistake',
-      'AI scoring that follows written, versioned rules',
-      'A record of where every data point came from',
-      'Automatic checks that pause scoring if its quality slips',
-      'Anything uncertain is held for a person to review',
-    ],
-    pipelineLabel: 'From filing to prospect list',
-    pipeline: [
-      { name: 'Public filings' },
-      { name: 'Matched to accounts' },
-      { name: 'AI scoring' },
-      { name: 'Quality check', gate: true },
-      { name: 'Prospect list' },
-    ],
-    stack: ['Node', 'TypeScript', 'PostgreSQL'],
-    link: { href: LINKS.coldpath, label: 'View Coldpath on GitHub' },
-    image: {
-      key: 'coldpath',
-      alt: "Coldpath's target-list view: 1,382 facilities ingested from EPA filings, 117 accounts after entity resolution, 114 prospects with existing customers suppressed, and 3 records held for human judgement.",
-      caption: 'Prototype target-list view. Client details cropped out.',
-    },
-  },
-  {
     slug: 'bee-free-tools',
     kicker: 'Free AI tools for small business',
     title: 'Bee Free Tools',
@@ -223,13 +204,13 @@ export const builds: Build[] = [
     description:
       'Seven free AI tools for Australian small business, including an AI search visibility checker and a plain-English knowledge base.',
     body: [
-      'Seven free AI tools for Australian small business, each built to solve one problem in under a minute. No sign-up required.',
+      'Seven free AI tools for Australian small business. Each one solves a single problem in under a minute, with no sign-up.',
       "They include an AI search visibility checker, a tool that structures business facts so search engines read them correctly, and a plain-English knowledge base that answers staff questions from a business's own procedures and policies.",
     ],
     governanceTitle: 'How it stays trustworthy',
     governance: [
-      'Answers come from the documents a business uploads',
-      'Questions it cannot answer go to the owner instead of being guessed',
+      'Answers come only from the documents a business uploads',
+      'Questions outside those documents go to the owner for an answer',
       'Usage limits keep costs predictable, and no account is needed',
       'Website data is checked field by field before it is handed back',
     ],
@@ -255,6 +236,8 @@ export const builds: Build[] = [
 
 export interface WorkItem {
   slug: string;
+  /** A note shown under the title on the case page, such as "Client name withheld". */
+  note?: string;
   kind: 'client' | 'build';
   kicker: string;
   title: string;
@@ -270,6 +253,7 @@ export const workItems: WorkItem[] = [
   {
     slug: wartsila.slug,
     kind: 'client',
+    note: wartsila.note,
     kicker: wartsila.kicker,
     title: wartsila.title,
     summary: wartsila.summary,
@@ -280,12 +264,24 @@ export const workItems: WorkItem[] = [
   {
     slug: tier1.slug,
     kind: 'client',
+    note: tier1.note,
     kicker: tier1.kicker,
     title: tier1.title,
     summary: tier1.summary,
     description: tier1.description,
     stat: tier1.result.stat,
     statLabel: tier1.result.statShort,
+  },
+  {
+    slug: coldpathCase.slug,
+    kind: 'client',
+    note: coldpathCase.note,
+    kicker: coldpathCase.kicker,
+    title: coldpathCase.title,
+    summary: coldpathCase.summary,
+    description: coldpathCase.description,
+    stat: coldpathCase.stat,
+    statLabel: coldpathCase.statShort,
   },
   ...builds.map((b) => ({
     slug: b.slug,
@@ -299,3 +295,13 @@ export const workItems: WorkItem[] = [
 ];
 
 export const workHref = (slug: string) => `/work/${slug}/`;
+
+/** Case studies with a page of their own in src/pages/work/, so [slug].astro skips them. */
+export const ownPages = new Set([coldpathCase.slug]);
+
+/** The previous and next case, for the pager at the foot of each case page. */
+export function neighbours(slug: string): { prev: WorkItem; next: WorkItem } {
+  const i = workItems.findIndex((w) => w.slug === slug);
+  const n = workItems.length;
+  return { prev: workItems[(i - 1 + n) % n]!, next: workItems[(i + 1) % n]! };
+}

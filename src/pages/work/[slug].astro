@@ -5,14 +5,13 @@ import ClientCase from '../../components/ClientCase.astro';
 import BuildDetail from '../../components/BuildDetail.astro';
 import CtaBand from '../../components/CtaBand.astro';
 import Arrow from '../../components/Arrow.astro';
-import { builds, tier1, wartsila, work, workHref, workItems, type WorkItem } from '../../content/work';
+import WorkPager from '../../components/WorkPager.astro';
+import { builds, neighbours, ownPages, tier1, wartsila, work, workItems, type WorkItem } from '../../content/work';
 
 export function getStaticPaths() {
-  const n = workItems.length;
-  return workItems.map((item, i) => ({
-    params: { slug: item.slug },
-    props: { item, prev: workItems[(i - 1 + n) % n]!, next: workItems[(i + 1) % n]! },
-  }));
+  return workItems
+    .filter((item) => !ownPages.has(item.slug))
+    .map((item) => ({ params: { slug: item.slug }, props: { item, ...neighbours(item.slug) } }));
 }
 
 interface Props {
@@ -22,7 +21,7 @@ interface Props {
 }
 const { item, prev, next } = Astro.props;
 const build = builds.find((b) => b.slug === item.slug);
-const note = item.slug === tier1.slug ? tier1.note : item.slug === wartsila.slug ? wartsila.note : undefined;
+const note = item.note;
 ---
 
 <Base title={item.title} description={item.description}>
@@ -42,95 +41,7 @@ const note = item.slug === tier1.slug ? tier1.note : item.slug === wartsila.slug
     </div>
   </section>
 
-  <nav class="container pager" aria-label="More work">
-    <a class="pager__link" href={workHref(prev.slug)}>
-      <span class="pager__dir"><Arrow direction="left" /> {work.prev}</span>
-      <span class="pager__title">{prev.title}</span>
-    </a>
-    <a class="pager__link pager__link--next" href={workHref(next.slug)}>
-      <span class="pager__dir">{work.next} <Arrow /></span>
-      <span class="pager__title">{next.title}</span>
-    </a>
-  </nav>
+  <WorkPager prev={prev} next={next} />
 
   <CtaBand />
 </Base>
-
-<style>
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 32px;
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--forest-900);
-    text-decoration: none;
-  }
-
-  .back-link:hover {
-    text-decoration: underline;
-    text-underline-offset: 0.25em;
-  }
-
-  .hero-note {
-    padding: 0.3rem 0.75rem;
-    border-radius: 999px;
-    background: var(--moss-100);
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--forest-900);
-  }
-
-  .pager {
-    display: grid;
-    gap: var(--space-4);
-    padding-block: 0 var(--section-pad);
-  }
-
-  @media (min-width: 48rem) {
-    .pager {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .pager__link {
-    display: grid;
-    gap: 0.35rem;
-    padding: 1.25rem 1.5rem;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius-l);
-    background: var(--white);
-    color: var(--ink);
-    text-decoration: none;
-    transition:
-      border-color 0.3s ease,
-      box-shadow 0.4s var(--ease-out);
-  }
-
-  .pager__link:hover {
-    border-color: var(--rule-strong);
-    box-shadow: var(--shadow-frame);
-  }
-
-  .pager__link--next {
-    text-align: right;
-    justify-items: end;
-  }
-
-  .pager__dir {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: var(--step--1);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--olive-700);
-  }
-
-  .pager__title {
-    font-family: var(--font-serif);
-    font-size: var(--step-1);
-  }
-</style>

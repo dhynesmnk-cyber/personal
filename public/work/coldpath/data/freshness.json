@@ -1,0 +1,17 @@
+{
+  "pulled_at": "2026-09-13",
+  "data_export_date": "2026-09-13",
+  "source": "U.S. EPA Risk Management Program (rmpmap.org), obtained under FOIA by the Data Liberation Project",
+  "license": "CC BY-SA 4.0",
+  "attribution": "U.S. EPA Risk Management Program via Data Liberation Project. CC BY-SA 4.0. Self-reported data; may contain errors or omissions.",
+  "facilities": 1382,
+  "accounts": 126,
+  "sites": 779,
+  "states": 43,
+  "review_queue_items": 76,
+  "unresolved_facilities": 2,
+  "delta_accounts": null,
+  "delta_sites": null,
+  "static": true,
+  "note": "Baked snapshot: the committed 13 Sep 2026 pull at current (HEAD) resolution. Wire .github/workflows/site-freshness.yml for weekly live refreshes."
+}

@@ -1,8 +1,16 @@
 /**
  * Brand, contact details, navigation and the calls to action shared by every
- * page. Page copy lives in the other files in this folder. Australian
- * English throughout; `npm run check` lints every file here for banned
- * jargon, em dashes and US spelling.
+ * page. Page copy lives in the other files in this folder.
+ *
+ * How the site speaks:
+ *   - First person. "I" is David; the brand is David Hynes Consulting.
+ *   - Plain, professional and short. Active voice, one idea per sentence.
+ *   - Positive outcomes: what the client gains, not what they avoid.
+ *   - Each idea lives on one page. The closing call to action is the only
+ *     deliberate repeat.
+ *   - Australian English. No em dashes, no jargon, no hype.
+ *     `npm run check` enforces the last three, and flags any sentence of
+ *     eight words or more that appears in two content files.
  */
 
 export const CONTACT_EMAIL = 'd.hynes.mnk@gmail.com';
@@ -33,11 +41,12 @@ export const brand = {
   founder: 'David Hynes',
   tagline: 'AI strategy, governance and adoption',
   description:
-    'David Hynes Consulting helps executive teams turn AI goals into strategy their people can deliver: governed workflows that non-technical staff actually use. Based in Melbourne.',
+    'David Hynes Consulting works with executive teams to turn AI goals into governed tools that staff use with confidence. Strategy, governance and adoption, from first audit to handover.',
   location: 'Melbourne, Australia',
   reach: 'Working with clients in Australia and the United States.',
 };
 
+/** Top-level navigation. The dropdown contents for each item are in menus.ts. */
 export const nav = [
   { label: 'Services', href: '/services/' },
   { label: 'Work', href: '/work/' },
@@ -55,12 +64,12 @@ export const cta = {
 /** The closing band at the foot of every page. */
 export const ctaBand = {
   heading: "Let's build AI systems your team will actually adopt.",
-  body: "A 30-minute conversation about where you are, what's in the way, and whether we're the right fit.",
-  emailNote: 'Opens your email app. Or write to us directly at',
+  body: "Tell me about the goal and what's in the way. In 30 minutes you'll know whether I can help.",
+  emailNote: 'Opens your email app. Or write to me directly at',
 };
 
 export const footer = {
-  blurb: 'AI strategy, evaluation design and adoption for executive teams.',
+  blurb: 'AI strategy, governance and adoption for executive teams.',
   pagesTitle: 'Pages',
   contactTitle: 'Contact',
   rights: 'No trackers, no third-party scripts.',
@@ -69,5 +78,5 @@ export const footer = {
 export const notFound = {
   title: 'Page not found',
   heading: 'This page has moved or never existed.',
-  body: 'Try one of these instead, or get in touch and we will point you in the right direction.',
+  body: "Try one of these pages instead, or get in touch and I'll point you in the right direction.",
 };

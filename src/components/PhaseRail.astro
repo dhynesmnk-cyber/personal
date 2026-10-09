@@ -26,9 +26,9 @@ import LayerStack from './shapes/LayerStack.astro';
             <li>{o}</li>
           ))}
         </ul>
-        <p class="phase__removes">
-          <span>{services.removesLabel}</span>
-          {ph.removes}
+        <p class="phase__strengthens">
+          <span>{services.strengthensLabel}</span>
+          {ph.strengthens}
         </p>
       </li>
     ))
@@ -173,14 +173,14 @@ import LayerStack from './shapes/LayerStack.astro';
     background: var(--olive-600);
   }
 
-  .phase__removes {
+  .phase__strengthens {
     margin-top: auto;
     padding-top: var(--space-4);
     border-top: 1px solid var(--rule);
     font-size: 0.9375rem;
   }
 
-  .phase__removes span {
+  .phase__strengthens span {
     display: block;
     margin-bottom: 0.15rem;
     font-size: 0.75rem;

@@ -1,0 +1,604 @@
+---
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import WorkPager from '../../components/WorkPager.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Arrow from '../../components/Arrow.astro';
+import { brand } from '../../content/brand';
+import { DEMO_PATH, WHITESPACE_RUN_URL, coldpath as c } from '../../content/coldpath';
+import { coldpathCase, neighbours, work } from '../../content/work';
+import '../../styles/coldpath.css';
+
+const { prev, next } = neighbours(coldpathCase.slug);
+const firstView = c.demo.views[0]!;
+const demoSrc = (v: { view: string; vert?: string }) =>
+  `${DEMO_PATH}?${new URLSearchParams({ view: v.view, ...(v.vert ? { vert: v.vert } : {}) })}`;
+const num = (i: number) => String(i + 1).padStart(2, '0');
+const sectionNum = (id: string) => num(c.contents.findIndex((s) => s.id === id));
+
+const schema = {
+  '@type': 'Article',
+  headline: c.hero.heading,
+  description: c.description,
+  author: { '@type': 'Person', name: brand.founder },
+  publisher: { '@type': 'Organization', name: brand.name },
+  dateModified: '2026-10-08',
+};
+---
+
+<Base title={c.title} description={c.description} image={c.image} imageAlt={c.imageAlt} type="article" schema={schema}>
+  <PageHero eyebrow={c.hero.eyebrow} heading={c.hero.heading} lede={c.hero.lede}>
+    <a slot="before" class="back-link" href="/work/">
+      <Arrow direction="left" />
+      {work.back}
+    </a>
+    <div slot="after" class="cp-hero__after">
+      <p class="hero-note">{c.hero.note}</p>
+      <div class="cp-hero__actions">
+        <a class="cp-button" href="#demo">{c.hero.demoLink}<Arrow direction="down" /></a>
+        <a class="text-link" href="#book">{c.hero.runLink}<Arrow direction="down" /></a>
+      </div>
+    </div>
+  </PageHero>
+
+  <section class="cp-facts" aria-label="Coldpath in numbers">
+    <div class="container">
+      <ul class="cp-stats" role="list">
+        {
+          c.hero.stats.map((s) => (
+            <li class:list={[s.accent && 'is-accent']}>
+              <span class="cp-stats__value">{s.value}</span>
+              <span class="cp-stats__label">{s.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="cp-fresh" data-fresh role="status">
+        <span class="cp-fresh__dot" aria-hidden="true"></span>
+        <span data-fresh-text>{c.hero.freshness}</span>
+      </p>
+      <nav class="cp-contents" aria-label={c.hero.contentsLabel}>
+        <p class="cp-contents__label" aria-hidden="true">{c.hero.contentsLabel}</p>
+        <ol role="list">
+          {
+            c.contents.map((s, i) => (
+              <li>
+                <a href={`#${s.id}`}>
+                  <span aria-hidden="true">{num(i)}</span>
+                  {s.label}
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+    </div>
+  </section>
+
+  <!-- 01 The outlier -->
+  <section class="section" id="outlier" aria-labelledby="outlier-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('outlier')} eyebrow={c.outlier.eyebrow} heading={c.outlier.heading} id="outlier-title">
+        <p class="lede">{c.outlier.lede}</p>
+      </SectionHead>
+
+      <figure class="cp-chart" role="img" aria-label={c.outlier.chartLabel}>
+        {
+          c.outlier.bars.map((b) => (
+            <div class:list={['cp-chart__row', b.kind && `is-${b.kind}`]} style={`--w:${b.width}%`}>
+              <span class="cp-chart__label">
+                {b.label}
+                {b.detail && <span class="cp-chart__detail">{b.detail}</span>}
+              </span>
+              <span class="cp-chart__track">
+                <span class="cp-chart__fill" />
+              </span>
+              <span class="cp-chart__value">{b.value}</span>
+            </div>
+          ))
+        }
+        <div class="cp-chart__axis" aria-hidden="true">
+          <span />
+          <span class="cp-chart__ticks">
+            {c.outlier.ticks.map((t) => <span>{t}</span>)}
+          </span>
+          <span>{c.outlier.scale}</span>
+        </div>
+      </figure>
+
+      <div class="cp-defect">
+        <h3>{c.outlier.defect.title}</h3>
+        <dl>
+          {
+            c.outlier.defect.rows.map((r) => (
+              <div>
+                <dt>{r.term}</dt>
+                <dd>{r.text}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <figure class="cp-quote">
+        <blockquote>
+          <p>{c.outlier.quote}</p>
+        </blockquote>
+        <figcaption>{c.outlier.quoteSource}</figcaption>
+      </figure>
+
+      <div class="cp-aside">
+        <p>{c.outlier.aside}</p>
+        <a class="text-link" href="#book">{c.asideButton}<Arrow /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 The near-miss -->
+  <section class="section section--alt" id="near-miss" aria-labelledby="near-miss-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('near-miss')} eyebrow={c.nearMiss.eyebrow} heading={c.nearMiss.heading} id="near-miss-title">
+        <p class="lede">{c.nearMiss.lede}</p>
+      </SectionHead>
+
+      <div class="cp-defect cp-defect--warn">
+        <h3>{c.nearMiss.defect.title}</h3>
+        <dl>
+          {
+            c.nearMiss.defect.rows.map((r) => (
+              <div>
+                <dt>{r.term}</dt>
+                <dd>{r.text}</dd>
+              </div>
+            ))
+          }
+        </dl>
+      </div>
+
+      <p class="cp-intro">{c.nearMiss.intro}</p>
+
+      <div class="cp-widget" id="auditor">
+        <div class="cp-widget__head">
+          <h3>{c.auditor.title}</h3>
+          <span class="cp-badge">{c.auditor.badge}</span>
+          <p class="cp-widget__src">{c.auditor.source}</p>
+        </div>
+        <div class="cp-widget__body">
+          <div class="cp-chips" id="audPresets" role="group" aria-label={c.auditor.presetsLabel}></div>
+          <div class="cp-inputs">
+            <div>
+              <label for="audProspect">{c.auditor.prospectLabel}</label>
+              <input id="audProspect" type="text" value="VersaCold Logistics" autocomplete="off" spellcheck="false" />
+            </div>
+            <div>
+              <label for="audCustomer">{c.auditor.customerLabel}</label>
+              <input id="audCustomer" type="text" value="Americold Logistics" autocomplete="off" spellcheck="false" />
+            </div>
+          </div>
+          <div class="cp-out" id="audOut" aria-live="polite">
+            <p class="cp-nojs">{c.auditor.noscript}</p>
+          </div>
+          <p class="cp-legend" aria-hidden="true">
+            <span class="cp-tok cp-tok--strong">strong</span>
+            <span class="cp-tok cp-tok--dist">distinctive</span>
+            <span class="cp-tok cp-tok--gen">generic</span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 The brief -->
+  <section class="section" id="brief" aria-labelledby="brief-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('brief')} eyebrow={c.brief.eyebrow} heading={c.brief.heading} id="brief-title" />
+      <div class="cp-prose">
+        {c.brief.paragraphs.map((p) => <p>{p}</p>)}
+        <p>
+          {c.brief.playbookLead}
+          <a href="#playbook">{c.brief.playbookLink}</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 The method -->
+  <section class="section section--alt" id="method" aria-labelledby="method-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('method')} eyebrow={c.method.eyebrow} heading={c.method.heading} id="method-title">
+        <p class="lede">{c.method.lede}</p>
+      </SectionHead>
+
+      <ol class="cp-pipe" role="list" aria-label={c.method.pipelineLabel}>
+        {
+          c.method.pipeline.map((step, i) => (
+            <li class:list={['cp-pipe__step', step.kind && `is-${step.kind}`]}>
+              <span class="cp-pipe__n" aria-hidden="true">
+                {num(i)}
+              </span>
+              <span class="cp-pipe__name">{step.name}</span>
+              <span class="cp-pipe__detail">{step.detail}</span>
+            </li>
+          ))
+        }
+      </ol>
+
+      <ul class="cp-cards" role="list">
+        {
+          c.method.principles.map((p) => (
+            <li class="cp-card">
+              <span class="cp-card__tag">{p.tag}</span>
+              <h3>{p.title}</h3>
+              <p>{p.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <p class="cp-intro">{c.method.intro}</p>
+
+      <div class="cp-widget" id="gates">
+        <div class="cp-widget__head">
+          <h3>{c.gates.title}</h3>
+          <span class="cp-badge">{c.gates.badge}</span>
+          <p class="cp-widget__src">{c.gates.source}</p>
+        </div>
+        <div class="cp-widget__body">
+          <div class="cp-chips" id="gatePresets" role="group" aria-label={c.gates.presetsLabel}></div>
+          <p class="cp-rec" id="gateRec"></p>
+          <div class="cp-table-wrap" role="region" aria-label={c.gates.title} tabindex="0">
+            <table class="cp-gates">
+              <thead>
+                <tr>{c.gates.columns.map((h) => <th scope="col">{h}</th>)}</tr>
+              </thead>
+              <tbody id="gateOut" aria-live="polite"></tbody>
+            </table>
+          </div>
+          <div id="gateFinal"></div>
+          <p class="cp-nojs">{c.gates.noscript}</p>
+          <p class="cp-widget__foot">{c.gates.footnote}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 The outcomes -->
+  <section class="section" id="outcomes" aria-labelledby="outcomes-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('outcomes')} eyebrow={c.outcomes.eyebrow} heading={c.outcomes.heading} id="outcomes-title">
+        <p class="lede">{c.outcomes.lede}</p>
+      </SectionHead>
+
+      <div class="cp-table-wrap" role="region" aria-labelledby="outcomes-caption" tabindex="0">
+        <table class="cp-table">
+          <caption id="outcomes-caption">{c.outcomes.tableCaption}</caption>
+          <thead>
+            <tr>{c.outcomes.columns.map((h) => <th scope="col">{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {
+              c.outcomes.rows.map((r) => (
+                <tr>
+                  <th scope="row">{r.name}</th>
+                  <td class="cp-num">{r.sites}</td>
+                  <td>{r.why}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="3">{c.outcomes.more}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <details class="cp-details">
+        <summary>{c.outcomes.howTitle}</summary>
+        <p>{c.outcomes.how}</p>
+      </details>
+
+      <div class="cp-compare">
+        {
+          c.outcomes.compare.map((col) => (
+            <div class:list={['cp-panel', `is-${col.tone}`]}>
+              <h3>{col.title}</h3>
+              <ul role="list">
+                {col.items.map((it) => (
+                  <li>{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="cp-note">
+        <p class="cp-note__title">{c.outcomes.honestTitle}</p>
+        <p>{c.outcomes.honest}</p>
+      </div>
+
+      <div class="cp-sub">
+        <h3>{c.outcomes.secondHeading}</h3>
+        <p>{c.outcomes.second}</p>
+      </div>
+
+      <div class="cp-widget" id="calc">
+        <div class="cp-widget__head">
+          <h3>{c.calc.title}</h3>
+          <span class="cp-badge cp-badge--soft">{c.calc.badge}</span>
+          <p class="cp-widget__src">{c.calc.source}</p>
+        </div>
+        <div class="cp-widget__body">
+          <div class="cp-sliders">
+            <div>
+              <label for="calcFac">{c.calc.facilities}</label>
+              <output id="calcFacV" for="calcFac">1,382</output>
+              <input type="range" id="calcFac" min="200" max="20000" step="1" value="1382" />
+            </div>
+            <div>
+              <label for="calcPer">{c.calc.perAccount}</label>
+              <output id="calcPerV" for="calcPer">11.0</output>
+              <input type="range" id="calcPer" min="2" max="30" step="0.1" value="11.0" />
+            </div>
+            <div>
+              <label for="calcCov">{c.calc.coverage}</label>
+              <output id="calcCovV" for="calcCov">11.1%</output>
+              <input type="range" id="calcCov" min="0" max="60" step="0.1" value="11.1" />
+            </div>
+          </div>
+          <div class="cp-calc" aria-live="polite">
+            <p><b id="calcResolved">126</b><span>{c.calc.resolved}</span></p>
+            <p><b id="calcMatched">14</b><span>{c.calc.matched}</span></p>
+            <p class="is-big"><b id="calcWhite">112</b><span>{c.calc.whitespace}</span></p>
+          </div>
+          <p class="cp-nojs">{c.calc.noscript}</p>
+          <p class="cp-widget__foot">{c.calc.note}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 The live demo -->
+  <section class="section section--alt" id="demo" aria-labelledby="demo-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('demo')} eyebrow={c.demo.eyebrow} heading={c.demo.heading} id="demo-title">
+        <p class="lede">{c.demo.lede}</p>
+      </SectionHead>
+
+      <div class="cp-chips cp-demo-menu" id="demoMenu" role="group" aria-label={c.demo.menuLabel}>
+        {
+          c.demo.views.map((v, i) => (
+            <button
+              class="cp-chip"
+              type="button"
+              data-view={v.view}
+              data-vert={v.vert}
+              data-caption={v.caption}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+              hidden
+            >
+              <span aria-hidden="true">{i + 1}</span>
+              {v.label}
+            </button>
+          ))
+        }
+      </div>
+
+      <ul class="cp-codes" role="list">
+        {
+          c.demo.codes.map((code) => (
+            <li>
+              {code.label}: <b>{code.code}</b>
+            </li>
+          ))
+        }
+        <li class="cp-codes__note">{c.demo.codesNote}</li>
+      </ul>
+
+      <div class="cp-demo">
+        <iframe id="demoFrame" data-base={DEMO_PATH} src={demoSrc(firstView)} title={c.demo.frameTitle} loading="lazy"></iframe>
+        <div class="cp-demo__bar">
+          <p id="demoCaption">{firstView.caption}</p>
+          <a id="demoOpen" class="text-link" href={demoSrc(firstView)} target="_blank" rel="noopener">
+            {c.demo.open}
+            <Arrow direction="up-right" />
+          </a>
+        </div>
+      </div>
+      <p class="cp-small">{c.demo.remember}</p>
+
+      <div class="cp-compare">
+        {
+          c.demo.compare.map((col) => (
+            <div class:list={['cp-panel', `is-${col.tone}`]}>
+              <h3>{col.title}</h3>
+              <ul role="list">
+                {col.items.map((it) => (
+                  <li>{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="cp-aside">
+        <p>{c.demo.aside}</p>
+        <a class="text-link" href="#book">{c.asideButton}<Arrow /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 The playbook -->
+  <section class="section" id="playbook" aria-labelledby="playbook-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('playbook')} eyebrow={c.playbook.eyebrow} heading={c.playbook.heading} id="playbook-title">
+        <p class="lede">{c.playbook.lede}</p>
+      </SectionHead>
+
+      <ul class="cp-cards cp-cards--two" role="list">
+        {
+          c.playbook.tests.map((t) => (
+            <li class="cp-card">
+              <span class="cp-card__tag">{t.tag}</span>
+              <h3>{t.title}</h3>
+              <p>{t.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="cp-table-wrap" role="region" aria-labelledby="playbook-caption" tabindex="0">
+        <table class="cp-table cp-table--wide">
+          <caption id="playbook-caption">{c.playbook.tableCaption}</caption>
+          <thead>
+            <tr>{c.playbook.columns.map((h) => <th scope="col">{h}</th>)}</tr>
+          </thead>
+          <tbody>
+            {
+              c.playbook.rows.map((r) => (
+                <tr class:list={[r.built && 'is-built']}>
+                  <th scope="row">{r.industry}</th>
+                  <td>{r.register}</td>
+                  <td>{r.signal}</td>
+                  <td class="cp-status">{r.status}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cp-note">
+        <p class="cp-note__title">{c.playbook.ruleTitle}</p>
+        <p>{c.playbook.rule}</p>
+      </div>
+
+      <div class="cp-aside">
+        <p>{c.playbook.aside}</p>
+        <a class="text-link" href="#book">{c.asideButton}<Arrow /></a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 How I work -->
+  <section class="section section--alt" id="how-i-work" aria-labelledby="how-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('how-i-work')} eyebrow={c.howIWork.eyebrow} heading={c.howIWork.heading} id="how-title">
+        <p class="lede">{c.howIWork.lede}</p>
+      </SectionHead>
+
+      <figure class="cp-log">
+        <figcaption>{c.howIWork.logTitle}</figcaption>
+        <ul role="list">
+          {
+            c.howIWork.log.map((l) => (
+              <li>
+                <span class="cp-log__state">{c.howIWork.merged}</span>
+                <span class="cp-log__pr">{l.pr}</span>
+                <span class="cp-log__title">{l.title}</span>
+                <span class="cp-log__hash">{l.hash}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </figure>
+
+      <ul class="cp-stats cp-stats--four" role="list">
+        {
+          c.howIWork.stats.map((s) => (
+            <li>
+              <span class="cp-stats__value">{s.value}</span>
+              <span class="cp-stats__label">{s.label}</span>
+            </li>
+          ))
+        }
+      </ul>
+
+      <div class="cp-sub cp-prose">
+        <h3>{c.howIWork.checksHeading}</h3>
+        {c.howIWork.checks.map((p) => <p>{p}</p>)}
+      </div>
+
+      <div class="cp-sub">
+        <h3>{c.howIWork.workingHeading}</h3>
+        <div class="cp-compare">
+          {
+            c.howIWork.working.map((col) => (
+              <div class="cp-panel">
+                <h4>{col.title}</h4>
+                <ul role="list">
+                  {col.items.map((it) => (
+                    <li>{it}</li>
+                  ))}
+                </ul>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 09 The live run -->
+  <section class="section cp-book" id="book" aria-labelledby="book-title">
+    <div class="container cp-flow">
+      <SectionHead num={sectionNum('book')} eyebrow={c.book.eyebrow} heading={c.book.heading} id="book-title">
+        <p class="lede">{c.book.lede}</p>
+      </SectionHead>
+
+      <ol class="cp-cards" role="list">
+        {
+          c.book.steps.map((s, i) => (
+            <li class="cp-card">
+              <span class="cp-card__tag">{num(i)}</span>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="cp-note">
+        <p class="cp-note__title">{c.book.dataTitle}</p>
+        <p>{c.book.data}</p>
+      </div>
+
+      <div class="cp-book__cta">
+        <a class="cp-button" href={WHITESPACE_RUN_URL}>{c.book.button}<Arrow /></a>
+        <p class="cp-small">{c.book.buttonNote}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cp-notes" aria-labelledby="notes-title">
+    <div class="container">
+      <h2 class="cp-notes__title" id="notes-title">{c.notes.heading}</h2>
+      <div class="cp-notes__grid">
+        {
+          c.notes.items.map((n) => (
+            <div>
+              <h3>{n.title}</h3>
+              <p>{n.body}</p>
+            </div>
+          ))
+        }
+      </div>
+      <a class="text-link cp-notes__repo" href={c.notes.repo.href}>
+        {c.notes.repo.label}
+        <Arrow direction="up-right" />
+      </a>
+    </div>
+  </section>
+
+  <WorkPager prev={prev} next={next} />
+
+  <CtaBand />
+</Base>
+
+<script>
+  import '../../scripts/coldpath/widgets';
+</script>

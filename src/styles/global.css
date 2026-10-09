@@ -249,6 +249,32 @@ p {
 
 /* ---------------------------------------------------------- shared bits */
 
+/* "All work" above a case study's eyebrow, and the note chip under its title. */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 32px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--forest-900);
+  text-decoration: none;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.25em;
+}
+
+.hero-note {
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: var(--moss-100);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--forest-900);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -283,6 +309,11 @@ p {
 .shape {
   pointer-events: none;
   user-select: none;
+}
+
+/* Looping shapes rest while they are off screen (see src/scripts/motion.ts). */
+[data-live][data-paused] * {
+  animation-play-state: paused !important;
 }
 
 /* ------------------------------------------------------- motion policy */

@@ -1,8 +1,11 @@
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { BOOKING_URL, LINKS, nav } from '../src/content/brand';
-import { allLogos } from '../src/content/logos';
+import { allLogos, logoWall } from '../src/content/logos';
 import { workItems } from '../src/content/work';
+import { insights } from '../src/content/insights';
+import { coldpath } from '../src/content/coldpath';
+import { menus } from '../src/content/menus';
 
 const WCAG_TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
@@ -12,6 +15,7 @@ const ROUTES = [
   '/work/',
   ...workItems.map((w) => `/work/${w.slug}/`),
   '/insights/',
+  ...insights.articles.map((a) => a.href),
   '/about/',
   '/contact/',
 ];
@@ -29,7 +33,9 @@ async function scrollThrough(page: Page): Promise<void> {
 }
 
 async function axe(page: Page) {
-  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).analyze();
+  // The Coldpath prototype in its frame is a separate, self-contained
+  // artefact; the page around it is tested like every other page.
+  const results = await new AxeBuilder({ page }).withTags(WCAG_TAGS).exclude('#demoFrame').analyze();
   return results.violations.map((v) => ({ id: v.id, impact: v.impact, nodes: v.nodes.map((n) => n.target.join(' ')).slice(0, 5) }));
 }
 
@@ -102,11 +108,24 @@ test.describe('site', () => {
     expect(hrefs.size).toBeGreaterThanOrEqual(ROUTES.length);
   });
 
-  test('anchors on other pages exist', async ({ page }) => {
-    await page.goto('/services/');
-    for (const n of ['1', '2', '3']) await expect(page.locator(`#phase-${n}`)).toHaveCount(1);
-    await page.goto('/work/');
-    await expect(page.locator('#builds')).toHaveCount(1);
+  test('every in-page link and menu anchor has a target', async ({ page }) => {
+    const anchored = new Map<string, Set<string>>();
+    for (const links of Object.values(menus)) {
+      for (const { href } of links) {
+        const [path, id] = href.split('#');
+        if (id) anchored.set(path!, (anchored.get(path!) ?? new Set()).add(id));
+      }
+    }
+    anchored.set('/work/', new Set(['builds']));
+    anchored.set('/', new Set(['results']));
+    anchored.set('/work/coldpath/', new Set(coldpath.contents.map((c) => c.id)));
+    for (const [path, ids] of anchored) {
+      await page.goto(path);
+      for (const id of ids) await expect(page.locator(`#${id}`), `${path}#${id}`).toHaveCount(1);
+      for (const href of await page.$$eval('main a[href^="#"]', (as) => as.map((a) => a.getAttribute('href')!))) {
+        await expect(page.locator(href), `${path}${href}`).toHaveCount(1);
+      }
+    }
   });
 
   test('unknown pages return a branded 404', async ({ page }) => {
@@ -122,16 +141,24 @@ test.describe('site', () => {
     const context = await browser.newContext();
     const page = await context.newPage();
     await page.route(/\/_astro\/.*\.js$/, (route) => route.abort());
-    for (const route of ['/', '/services/', '/work/tier-1-advisory/']) {
+    for (const route of ['/', '/services/', '/work/tier-1-advisory/', '/work/coldpath/']) {
       await page.goto(route);
       await expect(page.locator('html')).not.toHaveClass(/has-motion/);
-      // The menu button needs the script; without it the nav is simply shown.
-      await expect(page.locator('#site-nav')).toBeVisible();
-      await expect(page.locator('[data-menu-btn]')).toBeHidden();
       expect(await axe(page), route).toEqual([]);
       const floors = await page.$$eval('.ls-layer', (ls) => ls.map((l) => getComputedStyle(l).opacity));
       expect(floors.every((o) => o === '1'), route).toBe(true);
     }
+    await context.close();
+  });
+
+  test('with scripting off, the whole nav is shown and needs no buttons', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false, viewport: { width: 390, height: 844 } });
+    const page = await context.newPage();
+    await page.goto('/');
+    await expect(page.locator('#site-nav')).toBeVisible();
+    await expect(page.locator('[data-menu-btn]')).toBeHidden();
+    await expect(page.locator('[data-nav-toggle]').first()).toBeHidden();
+    for (const item of nav) await expect(page.locator('#site-nav').getByRole('link', { name: item.label, exact: true })).toBeVisible();
     await context.close();
   });
 
@@ -171,7 +198,30 @@ test.describe('home', () => {
     await expect(page).toHaveTitle(/^David Hynes Consulting/);
     await expect(page.locator('header .wordmark')).toHaveAccessibleName(/David Hynes Consulting/);
     const text = (await page.locator('main').textContent()) ?? '';
-    expect(text).not.toMatch(/friday night|venue|hospitality|build in public/i);
+    expect(text).not.toMatch(/friday night|venue|hospitality|build in public|melbourne/i);
+  });
+
+  test('only the strongest material: hero, services, results, then the call to action', async ({ page }) => {
+    await page.goto('/');
+    const sections = await page.locator('main > section').evaluateAll((els) => els.map((el) => el.getAttribute('aria-labelledby')));
+    expect(sections).toEqual(['hero-title', 'services-title', 'results-title', 'cta-band-title']);
+    await expect(page.locator('#results .result-card')).toHaveCount(3);
+    for (const href of await page.locator('#results .result-card a').evaluateAll((as) => as.map((a) => a.getAttribute('href')))) {
+      expect(href).toMatch(/^\/work\/[a-z0-9-]+\/$/);
+    }
+  });
+
+  test('the constellation organises as the hero scrolls away', async ({ page }) => {
+    await page.goto('/');
+    const sky = page.locator('.hero .ns');
+    await expect(sky.locator('svg')).toHaveAttribute('aria-hidden', 'true');
+    await expect.poll(() => sky.evaluate((el) => Number(el.style.getPropertyValue('--p') || 0))).toBeLessThan(0.1);
+    await page.mouse.wheel(0, 600);
+    await expect.poll(() => sky.evaluate((el) => Number(el.style.getPropertyValue('--p')))).toBeGreaterThan(0.5);
+    const running = await page.evaluate(
+      () => document.getAnimations().filter((a) => (a.effect as KeyframeEffect | null)?.target?.closest('.hero .ns')).length,
+    );
+    expect(running).toBeGreaterThan(10);
   });
 });
 
@@ -183,13 +233,35 @@ test.describe('logo wall', () => {
     const wall = page.locator('[data-logo-wall]');
     const items = wall.locator('.lw__list:not(.lw__list--clone) .lw__item');
     expect(await items.count()).toBe(allLogos.length);
-    expect(allLogos.length).toBeGreaterThanOrEqual(40);
+    expect(allLogos.length).toBeGreaterThanOrEqual(30);
     for (const name of await items.allTextContents()) expect(name.trim()).not.toBe('');
     await expect(wall.locator('.lw__list--clone').first()).toHaveAttribute('aria-hidden', 'true');
     await expect(wall).toContainText('not partnerships');
 
     const sprite = await (await request.get('/logos.svg')).text();
     for (const logo of allLogos) expect(sprite, logo.id).toContain(`id="logo-${logo.id}"`);
+  });
+
+  test('ranks frontier labs, then tools, then infrastructure, with marks getting smaller', async ({ page }) => {
+    await page.goto('/');
+    const tiers = page.locator('[data-logo-wall] .lw__tier');
+    expect((await tiers.locator('.lw__label').allTextContents()).map((t) => t.trim())).toEqual(logoWall.rows.map((r) => r.label));
+    const sizes = await tiers.evaluateAll((els) => els.map((el) => el.querySelector('.lw__mark')!.getBoundingClientRect().width));
+    expect(sizes[0]).toBeGreaterThan(sizes[1]!);
+    expect(sizes[1]).toBeGreaterThan(sizes[2]!);
+    for (const name of ['Anthropic', 'OpenAI', 'Gemini']) await expect(tiers.first()).toContainText(name);
+  });
+
+  test('drifts slowly: each row takes at least 90 seconds to loop', async ({ page }) => {
+    await page.goto('/');
+    const durations = await page.evaluate(() =>
+      document
+        .getAnimations()
+        .filter((a) => (a.effect as KeyframeEffect | null)?.target?.classList.contains('lw__track'))
+        .map((a) => Number(a.effect!.getTiming().duration)),
+    );
+    expect(durations).toHaveLength(3);
+    for (const d of durations) expect(d).toBeGreaterThanOrEqual(90_000);
   });
 
   test('scrolls with motion, and the Pause button stops it', async ({ page }) => {
@@ -222,15 +294,54 @@ test.describe('keyboard', () => {
   test('mobile menu opens, closes with Escape and returns focus', async ({ page }, info) => {
     test.skip(info.project.name !== 'mobile', 'The menu button only shows on small screens');
     await page.goto('/');
-    const button = page.getByRole('button', { name: 'Menu' });
+    const button = page.getByRole('button', { name: 'Menu', exact: true });
     await expect(button).toHaveAttribute('aria-expanded', 'false');
     await expect(page.locator('#site-nav')).toBeHidden();
     await button.click();
     await expect(button).toHaveAttribute('aria-expanded', 'true');
-    await expect(page.locator('#site-nav').getByRole('link', { name: 'Services' })).toBeVisible();
+    await expect(page.locator('#site-nav').getByRole('link', { name: 'Services', exact: true })).toBeVisible();
     await page.keyboard.press('Escape');
     await expect(button).toHaveAttribute('aria-expanded', 'false');
     await expect(button).toBeFocused();
+  });
+
+  test('mobile menu groups expand to show their pages', async ({ page }, info) => {
+    test.skip(info.project.name !== 'mobile', 'The menu button only shows on small screens');
+    await page.goto('/');
+    await page.getByRole('button', { name: 'Menu', exact: true }).click();
+    const toggle = page.getByRole('button', { name: 'Work menu' });
+    await expect(page.locator('#menu-work')).toBeHidden();
+    await toggle.click();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#menu-work').getByRole('link', { name: 'Coldpath' })).toBeVisible();
+  });
+
+  test('dropdowns open on hover, toggle with the chevron and close with Escape', async ({ page }, info) => {
+    test.skip(info.project.name === 'mobile', 'Hover dropdowns are a desktop pattern');
+    await page.goto('/');
+    const panel = page.locator('#menu-work');
+    await expect(panel).toBeHidden();
+    await page.locator('.nav-item', { has: page.locator('#menu-work') }).locator('.nav-link').hover();
+    await expect(panel).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Work menu' })).toHaveAttribute('aria-expanded', 'true');
+    for (const { label } of menus['/work/']!) await expect(panel.getByRole('link', { name: label })).toBeVisible();
+    await page.mouse.move(10, 600);
+    await expect(panel).toBeHidden();
+
+    const toggle = page.getByRole('button', { name: 'Services menu' });
+    await toggle.focus();
+    await page.keyboard.press('Enter');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(page.locator('#menu-services')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await expect(toggle).toBeFocused();
+
+    await page.keyboard.press('ArrowDown');
+    await expect(page.locator('#menu-services a').first()).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#menu-services')).toBeHidden();
+    await expect(toggle).toBeFocused();
   });
 
   test('skip link is first and moves focus to main', async ({ page }, info) => {
@@ -285,7 +396,7 @@ test.describe('keyboard', () => {
 /* -------------------------------------------------- performance and policy */
 
 test.describe('performance and policy', () => {
-  for (const route of ['/', '/work/tier-1-advisory/']) {
+  for (const route of ['/', '/work/tier-1-advisory/', '/work/coldpath/']) {
     test(`${route}: CLS under 0.02, no errors, no inline script, first-party only`, async ({ page, baseURL }) => {
       const errors: string[] = [];
       const origins = new Set<string>();
@@ -317,8 +428,20 @@ test.describe('performance and policy', () => {
     });
   }
 
+  test('every page carries a strict CSP, and only the site can frame it', async ({ page, request }) => {
+    for (const route of ROUTES) {
+      await page.goto(route);
+      const csp = await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
+      expect(csp, route).toContain("script-src 'self';");
+      expect(csp, route).toContain("default-src 'self'");
+      const res = await request.get(route);
+      expect(res.headers()['content-security-policy'], route).toContain("frame-ancestors 'self'");
+      expect(res.headers()['x-frame-options'], route).toBe('SAMEORIGIN');
+    }
+  });
+
   test('screenshots load as modern formats with alt text on project pages', async ({ page }) => {
-    await page.goto('/work/coldpath/');
+    await page.goto('/work/data-centre-observatory/');
     const img = page.locator('.frame img');
     await expect(img).toHaveAttribute('alt', /\S/);
     await expect(img).toHaveAttribute('width', /\d+/);
@@ -358,5 +481,73 @@ test.describe('motion', () => {
     expect(await page.$$eval('.shape svg', (svgs) => svgs.filter((s) => s.getAttribute('aria-hidden') !== 'true').length)).toBe(0);
     const pointer = await page.$$eval('.shape', (els) => els.map((el) => getComputedStyle(el).pointerEvents));
     expect(pointer.every((p) => p === 'none')).toBe(true);
+  });
+});
+
+/* ------------------------------------------------------ coldpath case study */
+
+test.describe('coldpath case study', () => {
+  test('the suppression auditor runs the real matching rules', async ({ page }) => {
+    await page.goto('/work/coldpath/');
+    const out = page.locator('#audOut');
+    // VersaCold vs Americold: close enough to worry about, never suppressed on fuzzy similarity alone.
+    await expect(out).toHaveAttribute('data-verdict', 'HUMAN QUEUE');
+    await expect(out).toContainText('Sent to a person');
+    await page.getByRole('button', { name: /Lineage LLC vs Lineage, Inc\./ }).click();
+    await expect(out).toHaveAttribute('data-verdict', 'SUPPRESSED');
+    await page.locator('#audProspect').fill('Sysco Corporation');
+    await page.locator('#audCustomer').fill('The Kroger Co.');
+    await expect(out).toHaveAttribute('data-verdict', 'CLEAR');
+  });
+
+  test('the gate visualiser refuses the 89 million pound outlier', async ({ page }) => {
+    await page.goto('/work/coldpath/');
+    await expect(page.locator('#gateOut tr[data-gate="G-OUT"]')).toHaveAttribute('data-result', 'REFUSE');
+    await expect(page.locator('#gateFinal')).toContainText('numeric_outlier');
+    await page.getByRole('button', { name: 'Clean facility: 30,000 lb' }).click();
+    await expect(page.locator('#gateOut tr')).toHaveCount(4);
+    await expect(page.locator('#gateOut tr[data-result="PASS"]')).toHaveCount(4);
+  });
+
+  test('the calculator starts at the real figures and responds', async ({ page }) => {
+    await page.goto('/work/coldpath/');
+    await expect(page.locator('#calcWhite')).toHaveText('112');
+    await expect(page.locator('#calcResolved')).toHaveText('126');
+    await page.locator('#calcCov').fill('0');
+    await expect(page.locator('#calcWhite')).toHaveText('126');
+  });
+
+  test('the freshness badge reads the published snapshot', async ({ page }) => {
+    await page.goto('/work/coldpath/');
+    await expect(page.locator('[data-fresh]')).toHaveAttribute('data-state', /snapshot|live/);
+    await expect(page.locator('[data-fresh]')).toContainText('13 September 2026');
+  });
+
+  test('the demo loads in its frame, runs, and follows the starting points', async ({ page }) => {
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(String(e)));
+    page.on('console', (m) => {
+      if (m.type() === 'error') errors.push(m.text());
+    });
+    await page.goto('/work/coldpath/');
+    const frame = page.locator('#demoFrame');
+    await frame.scrollIntoViewIfNeeded();
+    await expect.poll(() => page.frames().find((f) => f.url().includes('coldpath-sandbox'))?.title()).toMatch(/COLDPATH/);
+    const demo = page.frameLocator('#demoFrame');
+    await expect(demo.locator('body')).not.toBeEmpty();
+    await page.locator('#demoMenu').getByRole('button', { name: /Researched brief/ }).click();
+    await expect(frame).toHaveAttribute('src', /view=intel/);
+    await expect(page.locator('#demoOpen')).toHaveAttribute('href', /view=intel/);
+    await expect(page.locator('#demoCaption')).toContainText('Kroger');
+    expect(errors).toEqual([]);
+  });
+
+  test('the prototype is served with its own policy and can only be framed by the site', async ({ request }) => {
+    const res = await request.get('/work/coldpath/demo/coldpath-sandbox.html');
+    expect(res.status()).toBe(200);
+    const csp = res.headersArray().filter((h) => h.name.toLowerCase() === 'content-security-policy').map((h) => h.value).join(', ');
+    expect(csp).toContain("frame-ancestors 'self'");
+    expect(csp).toContain("connect-src 'self'");
+    expect(res.headers()['x-frame-options']).toBe('SAMEORIGIN');
   });
 });

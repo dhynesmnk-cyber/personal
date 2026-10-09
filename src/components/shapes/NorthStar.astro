@@ -1,0 +1,494 @@
+---
+/**
+ * North star constellation: the client's goals are the bright stars at the
+ * top; everyday work is the field of small shapes below. Streams rise from
+ * the field to the stars and work travels up them. As the hero scrolls away,
+ * the loose field organises into the streams and the stars brighten.
+ *
+ * Entirely decorative: aria-hidden, no pointer events. With reduced motion
+ * or no JavaScript it renders as a still, fully organised constellation.
+ */
+interface Props {
+  /** "hero" animates and organises on scroll. "settled" is the organised state, gently glowing. */
+  mode?: 'hero' | 'settled';
+  /** Unique per page, for gradient ids. */
+  id?: string;
+  labels?: { goals: string; work: string };
+}
+const { mode = 'hero', id = `ns-${mode}`, labels } = Astro.props;
+
+const W = 800;
+const H = 560;
+const BASE_Y = 540;
+
+// Deterministic pseudo-random numbers, so every build draws the same sky.
+const rand = (i: number, salt: number) => {
+  const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+  return x - Math.floor(x);
+};
+const r1 = (n: number) => Math.round(n * 10) / 10;
+
+// The goals. The middle star is the primary goal.
+const stars = [
+  { x: 190, y: 132, R: 15 },
+  { x: 420, y: 76, R: 21 },
+  { x: 650, y: 142, R: 15 },
+];
+
+const sparkle = (x: number, y: number, R: number) => {
+  const c = R * 0.16;
+  return `M${x} ${y - R}Q${r1(x + c)} ${r1(y - c)} ${x + R} ${y}Q${r1(x + c)} ${r1(y + c)} ${x} ${y + R}Q${r1(x - c)} ${r1(y + c)} ${x - R} ${y}Q${r1(x - c)} ${r1(y - c)} ${x} ${y - R}Z`;
+};
+
+// Two streams per star, from the field up to the star's underside.
+const bases = [70, 215, 340, 480, 590, 735];
+type Pt = { x: number; y: number };
+const streams = bases.map((bx, k) => {
+  const s = stars[Math.floor(k / 2)]!;
+  const ex = s.x + (k % 2 ? 7 : -7);
+  const ey = s.y + s.R + 10;
+  const p0: Pt = { x: bx, y: BASE_Y };
+  const p1: Pt = { x: bx, y: BASE_Y - 150 };
+  const p2: Pt = { x: r1(ex + (bx - ex) * 0.18), y: ey + 170 };
+  const p3: Pt = { x: ex, y: ey };
+  return { p: [p0, p1, p2, p3] as const, d: `M${p0.x} ${p0.y}C${p1.x} ${p1.y} ${p2.x} ${p2.y} ${p3.x} ${p3.y}` };
+});
+
+const bezier = ([p0, p1, p2, p3]: readonly [Pt, Pt, Pt, Pt], t: number): Pt => {
+  const u = 1 - t;
+  return {
+    x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+    y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
+  };
+};
+
+// Everyday work: a loose field of small shapes along the bottom.
+type Kind = 'dot' | 'ring' | 'square';
+const tones = ['ns__t1', 'ns__t2', 'ns__t3'];
+const field = Array.from({ length: 36 }, (_, i) => {
+  const kind: Kind = rand(i, 3) < 0.6 ? 'dot' : rand(i, 3) < 0.8 ? 'ring' : 'square';
+  return {
+    x: r1(30 + (i / 35) * 740 + (rand(i, 1) - 0.5) * 38),
+    y: r1(405 + rand(i, 2) * 122),
+    r: r1(2.4 + rand(i, 4) * 3.6),
+    kind,
+    tone: tones[Math.floor(rand(i, 5) * 3)]!,
+    dur: r1(14 + rand(i, 6) * 14),
+    dx: r1((rand(i, 7) - 0.5) * 22),
+    dy: r1((rand(i, 8) - 0.5) * 16),
+  };
+});
+
+// Where each shape settles: on the nearest stream, spaced up its lower half.
+const perStream = new Map<number, number>();
+const targets = field.map((n) => {
+  let best = 0;
+  bases.forEach((bx, k) => {
+    if (Math.abs(bx - n.x) < Math.abs(bases[best]! - n.x)) best = k;
+  });
+  const slot = perStream.get(best) ?? 0;
+  perStream.set(best, slot + 1);
+  return bezier(streams[best]!.p, 0.04 + slot * 0.085);
+});
+
+// Work rising along each stream: two travellers per stream.
+const travellers = streams.flatMap((s, k) =>
+  [0, 1].map((j) => ({
+    d: s.d,
+    dur: r1(8 + rand(k * 2 + j, 9) * 4),
+    delay: r1(-(j * 0.5 + rand(k, 10) * 0.5) * 10),
+    at: Math.round(28 + j * 38 + rand(k, 11) * 10),
+    r: j ? 2.2 : 3,
+  })),
+);
+
+// Distant background stars.
+const specks = Array.from({ length: 48 }, (_, i) => ({
+  x: r1(rand(i, 12) * W),
+  y: r1(rand(i, 13) * 330),
+  r: r1(0.6 + rand(i, 14) * 0.9),
+  o: r1(0.2 + rand(i, 15) * 0.45),
+  twinkle: rand(i, 16) < 0.35,
+  dur: r1(5 + rand(i, 17) * 7),
+}));
+
+const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!.y}L${stars[2]!.x} ${stars[2]!.y}`;
+---
+
+<div class:list={['ns', `ns--${mode}`, 'shape']} data-scrub={mode === 'hero' ? 'exit' : undefined} data-live>
+  <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <radialGradient id={`${id}-glow`}>
+        <stop offset="0" class="ns__glow-0"></stop>
+        <stop offset="0.35" class="ns__glow-1"></stop>
+        <stop offset="1" class="ns__glow-2"></stop>
+      </radialGradient>
+      <linearGradient id={`${id}-stream`} gradientUnits="userSpaceOnUse" x1="0" y1={BASE_Y} x2="0" y2="80">
+        <stop offset="0" class="ns__stream-0"></stop>
+        <stop offset="0.55" class="ns__stream-1"></stop>
+        <stop offset="1" class="ns__stream-2"></stop>
+      </linearGradient>
+    </defs>
+
+    <g class="ns__specks">
+      {
+        specks.map((s, i) => (
+          <circle
+            cx={s.x}
+            cy={s.y}
+            r={s.r}
+            class:list={[s.twinkle && 'ns__twinkle']}
+            style={`--o:${s.o};--dur:${s.dur}s;--i:${i}`}
+          />
+        ))
+      }
+    </g>
+
+    <g class="ns__glows">
+      {stars.map((s, i) => <circle class="ns__glow" cx={s.x} cy={s.y} r={s.R * 5.2} fill={`url(#${id}-glow)`} style={`--i:${i}`} />)}
+    </g>
+
+    <path class="ns__constellation" d={constellation} pathLength="1"></path>
+
+    <g class="ns__streams" stroke={`url(#${id}-stream)`}>
+      {streams.map((s, i) => <path d={s.d} pathLength="1" style={`--i:${i}`} />)}
+    </g>
+
+    <g class="ns__field">
+      {
+        field.map((n, i) => {
+          const t = targets[i]!;
+          return (
+            <g class="ns__settle" style={`--tx:${r1(t.x - n.x)}px;--ty:${r1(t.y - n.y)}px`}>
+              <g class="ns__drift" style={`--dx:${n.dx}px;--dy:${n.dy}px;--dur:${n.dur}s;--i:${i}`}>
+                {n.kind === 'dot' && <circle class:list={['ns__shape', n.tone]} cx={n.x} cy={n.y} r={n.r} />}
+                {n.kind === 'ring' && <circle class:list={['ns__shape', 'ns__ring', n.tone]} cx={n.x} cy={n.y} r={n.r + 0.8} />}
+                {n.kind === 'square' && (
+                  <rect class:list={['ns__shape', n.tone]} x={n.x - n.r} y={n.y - n.r} width={n.r * 2} height={n.r * 2} rx="1.5" />
+                )}
+              </g>
+            </g>
+          );
+        })
+      }
+    </g>
+
+    <g class="ns__travellers">
+      {
+        travellers.map((t) => (
+          <circle
+            r={t.r}
+            cx="0"
+            cy="0"
+            style={`offset-path:path('${t.d}');--dur:${t.dur}s;--delay:${t.delay}s;--at:${t.at}%`}
+          />
+        ))
+      }
+    </g>
+
+    <g class="ns__stars">
+      {
+        stars.map((s, i) => (
+          <g class="ns__star" style={`--i:${i}`}>
+            <circle class="ns__halo" cx={s.x} cy={s.y} r={s.R * 1.35} />
+            <path class="ns__sparkle" d={sparkle(s.x, s.y, s.R)} />
+            <circle class="ns__core" cx={s.x} cy={s.y} r={s.R * 0.2} />
+          </g>
+        ))
+      }
+    </g>
+
+    {
+      labels && (
+        <g class="ns__labels">
+          <text x={stars[1]!.x} y={stars[1]!.y - 46} text-anchor="middle">
+            {labels.goals}
+          </text>
+          <text x={W - 24} y={H - 4} text-anchor="end">
+            {labels.work}
+          </text>
+        </g>
+      )
+    }
+  </svg>
+</div>
+
+<style>
+  .ns {
+    /* Organised and settled by default: the final state without motion. */
+    --p: 1;
+    position: relative;
+    width: 100%;
+  }
+
+  :global(.has-motion) .ns--hero {
+    --p: 0;
+  }
+
+  .ns svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  /* ----- colour ----- */
+
+  .ns__glow-0 {
+    stop-color: var(--lime-200);
+    stop-opacity: 0.55;
+  }
+
+  .ns__glow-1 {
+    stop-color: var(--sage-300);
+    stop-opacity: 0.18;
+  }
+
+  .ns__glow-2 {
+    stop-color: var(--sage-300);
+    stop-opacity: 0;
+  }
+
+  .ns__stream-0 {
+    stop-color: var(--sage-300);
+    stop-opacity: 0.05;
+  }
+
+  .ns__stream-1 {
+    stop-color: var(--sage-300);
+    stop-opacity: 0.38;
+  }
+
+  .ns__stream-2 {
+    stop-color: var(--lime-200);
+    stop-opacity: 0.95;
+  }
+
+  .ns__specks circle {
+    fill: var(--paper);
+    opacity: var(--o);
+  }
+
+  .ns__glow {
+    opacity: calc(0.6 + 0.4 * var(--p));
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .ns__constellation {
+    fill: none;
+    stroke: var(--sage-300);
+    stroke-width: 1;
+    stroke-dasharray: 0.006 0.012;
+    opacity: 0.55;
+  }
+
+  .ns__streams path {
+    fill: none;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 0;
+    opacity: calc(0.55 + 0.45 * var(--p));
+  }
+
+  .ns__t1 {
+    fill: var(--sage-300);
+  }
+
+  .ns__t2 {
+    fill: var(--olive-400);
+  }
+
+  .ns__t3 {
+    fill: var(--lime-200);
+    opacity: 0.85;
+  }
+
+  .ns__ring {
+    fill: none;
+    stroke-width: 1.4;
+  }
+
+  .ns__ring.ns__t1 {
+    stroke: var(--sage-300);
+  }
+
+  .ns__ring.ns__t2 {
+    stroke: var(--olive-400);
+  }
+
+  .ns__ring.ns__t3 {
+    stroke: var(--lime-200);
+  }
+
+  .ns__shape {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .ns__travellers circle {
+    fill: var(--lime-200);
+    offset-rotate: 0deg;
+    offset-distance: var(--at);
+    opacity: 0.9;
+  }
+
+  /* Browsers without CSS motion paths would draw the travellers at the origin. */
+  @supports not (offset-path: path('M0 0')) {
+    .ns__travellers {
+      display: none;
+    }
+  }
+
+  .ns__halo {
+    fill: none;
+    stroke: var(--lime-200);
+    stroke-width: 1;
+    opacity: 0.35;
+  }
+
+  .ns__sparkle {
+    fill: var(--white);
+  }
+
+  .ns__core {
+    fill: var(--white);
+  }
+
+  .ns__star {
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+
+  .ns__labels {
+    fill: var(--sage-200);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 39.99rem) {
+    .ns__labels {
+      display: none;
+    }
+  }
+
+  /* Scroll: the loose field settles onto the streams. */
+  .ns__settle {
+    transform: translate(calc(var(--tx) * var(--p)), calc(var(--ty) * var(--p)));
+  }
+
+  /* ----- motion (removed entirely under reduced motion) ----- */
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.has-motion) .ns__glow {
+      animation: ns-pulse 6s ease-in-out infinite alternate;
+      animation-delay: calc(var(--i) * -2s);
+    }
+
+    :global(.has-motion) .ns__twinkle {
+      animation: ns-twinkle var(--dur) ease-in-out infinite alternate;
+      animation-delay: calc(var(--i) * -0.37s);
+    }
+
+    :global(.has-motion) .ns__travellers circle {
+      animation: ns-rise var(--dur) linear var(--delay) infinite;
+    }
+
+    :global(.has-motion) .ns--hero .ns__drift {
+      animation: ns-drift var(--dur) ease-in-out infinite alternate;
+      animation-delay: calc(var(--i) * -1.3s);
+    }
+
+    /* Entrance, hero only. */
+    :global(.has-motion) .ns--hero .ns__star {
+      animation: ns-star 1.4s var(--ease-out) both;
+      animation-delay: calc(0.2s + var(--i) * 0.25s);
+    }
+
+    :global(.has-motion) .ns--hero .ns__constellation {
+      animation: ns-fade 1.6s ease 0.9s both;
+    }
+
+    :global(.has-motion) .ns--hero .ns__streams path {
+      animation: ns-draw 2.2s var(--ease-in-out) both;
+      animation-delay: calc(0.6s + var(--i) * 0.14s);
+    }
+
+    :global(.has-motion) .ns--hero .ns__shape {
+      animation: ns-appear 1.6s var(--ease-out) both;
+      animation-delay: calc(var(--i) * 30ms);
+    }
+
+    :global(.has-motion) .ns--hero .ns__labels {
+      animation: ns-fade 1.2s ease 1.6s both;
+    }
+  }
+
+  @keyframes ns-pulse {
+    from {
+      transform: scale(0.86);
+    }
+    to {
+      transform: scale(1.08);
+    }
+  }
+
+  @keyframes ns-twinkle {
+    to {
+      opacity: 0.08;
+    }
+  }
+
+  @keyframes ns-rise {
+    from {
+      offset-distance: 0%;
+      opacity: 0;
+    }
+    12% {
+      opacity: 0.95;
+    }
+    85% {
+      opacity: 0.95;
+    }
+    to {
+      offset-distance: 100%;
+      opacity: 0;
+    }
+  }
+
+  /* Drift fades out as the field organises. */
+  @keyframes ns-drift {
+    to {
+      transform: translate(calc(var(--dx) * (1 - var(--p))), calc(var(--dy) * (1 - var(--p))));
+    }
+  }
+
+  @keyframes ns-star {
+    from {
+      opacity: 0;
+      transform: scale(0.3) rotate(-45deg);
+    }
+  }
+
+  @keyframes ns-fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes ns-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
+
+  @keyframes ns-appear {
+    from {
+      opacity: 0;
+      transform: scale(0.3);
+    }
+  }
+</style>
