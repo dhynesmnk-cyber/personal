@@ -311,6 +311,59 @@ p {
   user-select: none;
 }
 
+/*
+ * Soft entrances. [data-fade] blocks fade up as they scroll into view, in a
+ * cascade set by --d (0, 1, 2...). It uses the translate property, so cards
+ * keep their own hover transforms. Only with motion allowed and the script
+ * running; otherwise everything is simply there.
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .has-motion [data-fade]:not(.is-in, .is-seen) {
+    opacity: 0;
+  }
+
+  .has-motion [data-fade].is-in {
+    animation: fade-up 0.9s var(--ease-out) both;
+    animation-delay: calc(var(--d, 0) * 90ms);
+  }
+
+  /* Page openings rise in as the page loads. Opacity starts just above
+     zero so the browser still counts the text as painted straight away. */
+  .rise > * {
+    animation: rise 0.9s var(--ease-out) both;
+  }
+
+  .rise > :nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .rise > :nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .rise > :nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .rise > :nth-child(n + 5) {
+    animation-delay: 240ms;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    translate: 0 22px;
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0.01;
+    translate: 0 16px;
+  }
+}
+
 /* Looping shapes rest while they are off screen (see src/scripts/motion.ts). */
 [data-live][data-paused] * {
   animation-play-state: paused !important;

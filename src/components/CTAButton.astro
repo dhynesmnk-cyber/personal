@@ -40,7 +40,16 @@ const { label = cta.label, size = 'default', tone = 'dark', id } = Astro.props;
     transition:
       background-color var(--dur-fast) ease,
       color var(--dur-fast) ease,
-      box-shadow var(--dur-med) var(--ease-out);
+      box-shadow var(--dur-med) var(--ease-out),
+      translate var(--dur-med) var(--ease-out);
+  }
+
+  .btn:hover {
+    translate: 0 -2px;
+  }
+
+  .btn:active {
+    translate: 0;
   }
 
   .btn :global(.arrow) {

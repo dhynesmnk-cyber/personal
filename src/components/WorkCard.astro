@@ -10,13 +10,15 @@ interface Props {
   item: WorkItem;
   /** Heading level for the card title, to fit the page outline. */
   level?: 'h2' | 'h3';
+  /** Position in its grid, for the cascade as cards fade in. */
+  index?: number;
 }
-const { item, level = 'h3' } = Astro.props;
+const { item, level = 'h3', index = 0 } = Astro.props;
 const images = { observatory, bee };
 const Heading = level;
 ---
 
-<article class:list={['wc', item.image ? 'wc--image' : 'wc--stat']}>
+<article class:list={['wc', item.image ? 'wc--image' : 'wc--stat']} data-fade style={`--d:${index}`}>
   {
     item.image && (
       <div class="wc__media">
@@ -43,7 +45,7 @@ const Heading = level;
     {
       item.stat && (
         <p class="wc__stat">
-          <span class="wc__stat-value">{item.stat}</span>
+          <span class="wc__stat-value" data-count>{item.stat}</span>
           <span>{item.statLabel}</span>
         </p>
       )

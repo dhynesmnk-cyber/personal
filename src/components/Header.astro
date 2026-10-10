@@ -143,6 +143,19 @@ const [first, ...rest] = brand.name.split(' ');
       if (!header.contains(e.target as Node)) closeAll();
     });
 
+    // A soft shadow appears once the page scrolls under the header.
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        header.toggleAttribute('data-scrolled', window.scrollY > 8);
+        ticking = false;
+      });
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+
     header.addEventListener('keydown', (e) => {
       if (e.key !== 'Escape') return;
       const item = openItem();
@@ -164,6 +177,14 @@ const [first, ...rest] = brand.name.split(' ');
     z-index: 50;
     background: var(--paper);
     border-bottom: 1px solid var(--rule);
+    transition:
+      box-shadow var(--dur-med) ease,
+      border-color var(--dur-med) ease;
+  }
+
+  .site-header[data-scrolled] {
+    border-bottom-color: transparent;
+    box-shadow: 0 10px 30px -22px rgb(21 40 29 / 0.55);
   }
 
   .site-header__inner {

@@ -20,8 +20,8 @@ const { submission, research, matters } = insights;
         <div class="container">
           <SectionHead eyebrow={insights.articlesEyebrow} heading={insights.articlesHeading} id="articles-title" />
           <ul class="articles" role="list">
-            {insights.articles.map((a) => (
-              <li class="article-card">
+            {insights.articles.map((a, i) => (
+              <li class="article-card" data-fade style={`--d:${i}`}>
                 <p class="article-card__meta">
                   {a.date} <span aria-hidden="true">·</span> {a.readingTime}
                 </p>
@@ -48,7 +48,7 @@ const { submission, research, matters } = insights;
         <div class="prose">
           {submission.paragraphs.map((p) => <p>{p}</p>)}
         </div>
-        <dl class="record">
+        <dl class="record" data-fade>
           {
             submission.record.map((r) => (
               <div class="record__row">
@@ -83,13 +83,13 @@ const { submission, research, matters } = insights;
           <a class="text-link" href={research.links.repo.href}>{research.links.repo.label}<Arrow direction="up-right" /></a>
         </p>
       </div>
-      <div class="split__visual">
+      <div class="split__visual" data-fade>
         <LayerStack layers={4} labels={research.stackLabels} gate accentTop />
         <ul class="stats" role="list">
           {
             research.stats.map((s) => (
               <li>
-                <span class="stats__value">{s.value}</span>
+                <span class="stats__value" data-count>{s.value}</span>
                 <span class="stats__label">{s.label}</span>
               </li>
             ))

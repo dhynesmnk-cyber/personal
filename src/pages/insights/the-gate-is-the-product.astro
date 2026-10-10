@@ -58,7 +58,7 @@ const meta = insights.articles.find((a) => a.href === '/insights/the-gate-is-the
     database, network or model inside it. Because it is pure, it can be tested like any other function: the cold-chain engine
     has 49 of them, each with test cases, all running on every change.
   </p>
-  <p class="verdicts">
+  <p class="verdicts" data-fade>
     <span class="v v--pass">Pass</span>
     <span class="v v--warn">Warn</span>
     <span class="v v--refuse">Refuse, with a reason</span>
@@ -79,7 +79,7 @@ const meta = insights.articles.find((a) => a.href === '/insights/the-gate-is-the
       Building it into the export filter made it real in a way a guideline on a slide never could.
     </li>
   </ul>
-  <blockquote class="pull">
+  <blockquote class="pull" data-fade>
     <p>Accuracy is a number. Trust is a structure. Only one of them survives a Friday afternoon.</p>
   </blockquote>
   <p>
@@ -90,39 +90,39 @@ const meta = insights.articles.find((a) => a.href === '/insights/the-gate-is-the
 
   <h2>Six rules for putting gates in front of your AI</h2>
   <ol class="rules" role="list">
-    <li>
+    <li data-fade style="--d:0">
       <h3>Name your worst failure, then make it a regression test.</h3>
       <p>
         Not an anecdote in a retrospective, but a build that fails if the failure returns. The 89-million-pound facility and the
         four-character near-miss are both tests now.
       </p>
     </li>
-    <li>
+    <li data-fade style="--d:1">
       <h3>Every refusal carries a reason, and nothing is deleted.</h3>
       <p>Suppress, quarantine or queue, but never make a record vanish. Your audit trail should be a query, not an archaeology project.</p>
     </li>
-    <li>
+    <li data-fade style="--d:2">
       <h3>People confirm anything that leaves the building.</h3>
       <p>AI can rank work, draft content and queue reviews. The confirm flag belongs to a person with a name and a job.</p>
     </li>
-    <li>
+    <li data-fade style="--d:2">
       <h3>Prove the guardrail with a control test.</h3>
       <p>Write the test that fails loudly when the protection silently disappears. Silent failure is the one failure you cannot afford.</p>
     </li>
-    <li>
+    <li data-fade style="--d:2">
       <h3>Keep gates portable.</h3>
       <p>
         Pure functions with no database, network or vendor inside. Your evaluation layer should outlast the platform migration,
         the vendor change and the audit.
       </p>
     </li>
-    <li>
+    <li data-fade style="--d:2">
       <h3>Label what is pre-built and what is live.</h3>
       <p>Being open about what is automated is the cheapest trust signal you have. Hiding it is the most expensive.</p>
     </li>
   </ol>
 
-  <div class="callout">
+  <div class="callout" data-fade>
     <p>
       All six rules are running somewhere you can test them. The Coldpath case study includes a live demo with 39 gates running in
       your browser, refusals and all.

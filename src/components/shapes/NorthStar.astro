@@ -2,24 +2,34 @@
 /**
  * North star constellation: the client's goals are the bright stars at the
  * top; everyday work is the field of small shapes below. Streams rise from
- * the field to the stars and work travels up them. As the hero scrolls away,
- * the loose field organises into the streams and the stars brighten.
+ * the field to the stars, tributaries feed them, and each stream passes a
+ * check (a gate) on the way up.
+ *
+ * In the hero the picture assembles as soon as it is on screen: the stars
+ * light, the streams draw upwards, the loose work gathers onto them and work
+ * starts travelling up, lighting each gate as it passes. Elsewhere ("settled")
+ * it starts assembled and just keeps flowing.
+ *
+ * The motion is driven by the small script below, which moves SVG elements
+ * by attribute. That works the same in every browser, Safari included, and
+ * stops whenever the graphic is off screen or the tab is hidden.
  *
  * Entirely decorative: aria-hidden, no pointer events. With reduced motion
- * or no JavaScript it renders as a still, fully organised constellation.
+ * or with scripting off it is a still, fully assembled constellation.
  */
 interface Props {
-  /** "hero" animates and organises on scroll. "settled" is the organised state, gently glowing. */
+  /** "hero" assembles when it comes into view. "settled" starts assembled. */
   mode?: 'hero' | 'settled';
   /** Unique per page, for gradient ids. */
   id?: string;
-  labels?: { goals: string; work: string };
+  labels?: { goals: string; work: string; checks?: string };
 }
 const { mode = 'hero', id = `ns-${mode}`, labels } = Astro.props;
 
 const W = 800;
 const H = 560;
-const BASE_Y = 540;
+const BASE_Y = 545;
+const GATE_T = 0.5;
 
 // Deterministic pseudo-random numbers, so every build draws the same sky.
 const rand = (i: number, salt: number) => {
@@ -28,94 +38,190 @@ const rand = (i: number, salt: number) => {
 };
 const r1 = (n: number) => Math.round(n * 10) / 10;
 
-// The goals. The middle star is the primary goal.
-const stars = [
-  { x: 190, y: 132, R: 15 },
-  { x: 420, y: 76, R: 21 },
-  { x: 650, y: 142, R: 15 },
-];
-
-const sparkle = (x: number, y: number, R: number) => {
-  const c = R * 0.16;
-  return `M${x} ${y - R}Q${r1(x + c)} ${r1(y - c)} ${x + R} ${y}Q${r1(x + c)} ${r1(y + c)} ${x} ${y + R}Q${r1(x - c)} ${r1(y + c)} ${x - R} ${y}Q${r1(x - c)} ${r1(y - c)} ${x} ${y - R}Z`;
-};
-
-// Two streams per star, from the field up to the star's underside.
-const bases = [70, 215, 340, 480, 590, 735];
 type Pt = { x: number; y: number };
-const streams = bases.map((bx, k) => {
-  const s = stars[Math.floor(k / 2)]!;
-  const ex = s.x + (k % 2 ? 7 : -7);
-  const ey = s.y + s.R + 10;
-  const p0: Pt = { x: bx, y: BASE_Y };
-  const p1: Pt = { x: bx, y: BASE_Y - 150 };
-  const p2: Pt = { x: r1(ex + (bx - ex) * 0.18), y: ey + 170 };
-  const p3: Pt = { x: ex, y: ey };
-  return { p: [p0, p1, p2, p3] as const, d: `M${p0.x} ${p0.y}C${p1.x} ${p1.y} ${p2.x} ${p2.y} ${p3.x} ${p3.y}` };
-});
+type Curve = readonly [Pt, Pt, Pt, Pt];
 
-const bezier = ([p0, p1, p2, p3]: readonly [Pt, Pt, Pt, Pt], t: number): Pt => {
+const bezier = ([p0, p1, p2, p3]: Curve, t: number): Pt => {
   const u = 1 - t;
   return {
     x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
     y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y,
   };
 };
+const tangent = ([p0, p1, p2, p3]: Curve, t: number): Pt => {
+  const u = 1 - t;
+  const x = 3 * u * u * (p1.x - p0.x) + 6 * u * t * (p2.x - p1.x) + 3 * t * t * (p3.x - p2.x);
+  const y = 3 * u * u * (p1.y - p0.y) + 6 * u * t * (p2.y - p1.y) + 3 * t * t * (p3.y - p2.y);
+  const len = Math.hypot(x, y) || 1;
+  return { x: x / len, y: y / len };
+};
+const pathOf = ([p0, p1, p2, p3]: Curve) =>
+  `M${r1(p0.x)} ${r1(p0.y)}C${r1(p1.x)} ${r1(p1.y)} ${r1(p2.x)} ${r1(p2.y)} ${r1(p3.x)} ${r1(p3.y)}`;
 
-// Everyday work: a loose field of small shapes along the bottom.
+/* ----------------------------------------------------------------- stars */
+
+// The goals. The middle star is the primary goal.
+const goals = [
+  { x: 180, y: 140, R: 14 },
+  { x: 420, y: 80, R: 21 },
+  { x: 660, y: 148, R: 14 },
+];
+// Lesser stars, joined to the goals to make a wider constellation.
+const minor = [
+  { x: 86, y: 74, R: 4.2 },
+  { x: 292, y: 42, R: 3.6 },
+  { x: 548, y: 38, R: 4 },
+  { x: 742, y: 70, R: 3.6 },
+  { x: 262, y: 212, R: 3 },
+  { x: 584, y: 218, R: 3 },
+  { x: 108, y: 238, R: 2.6 },
+  { x: 716, y: 250, R: 2.6 },
+];
+const links: [Pt, Pt][] = [
+  [goals[0]!, goals[1]!],
+  [goals[1]!, goals[2]!],
+  [goals[0]!, minor[0]!],
+  [goals[0]!, minor[4]!],
+  [minor[4]!, minor[6]!],
+  [goals[1]!, minor[1]!],
+  [goals[1]!, minor[2]!],
+  [goals[2]!, minor[3]!],
+  [goals[2]!, minor[5]!],
+  [minor[5]!, minor[7]!],
+];
+
+// A soft eight-point star: four long points and four short ones.
+const sparkle = (x: number, y: number, R: number) => {
+  const pts = Array.from({ length: 8 }, (_, k) => {
+    const a = (k * Math.PI) / 4 - Math.PI / 2;
+    const r = k % 2 ? R * 0.42 : R;
+    return { x: x + r * Math.cos(a), y: y + r * Math.sin(a) };
+  });
+  const ctrl = (k: number) => {
+    const a = ((k + 0.5) * Math.PI) / 4 - Math.PI / 2;
+    return { x: x + R * 0.13 * Math.cos(a), y: y + R * 0.13 * Math.sin(a) };
+  };
+  return (
+    `M${r1(pts[0]!.x)} ${r1(pts[0]!.y)}` +
+    pts.map((_, k) => `Q${r1(ctrl(k).x)} ${r1(ctrl(k).y)} ${r1(pts[(k + 1) % 8]!.x)} ${r1(pts[(k + 1) % 8]!.y)}`).join('') +
+    'Z'
+  );
+};
+
+/* --------------------------------------------------------------- streams */
+
+// Two main streams per goal, rising from the field to the star's underside.
+const bases = [70, 215, 340, 480, 590, 735];
+const mains: Curve[] = bases.map((bx, k) => {
+  const s = goals[Math.floor(k / 2)]!;
+  const ex = s.x + (k % 2 ? 7 : -7);
+  const ey = s.y + s.R + 10;
+  return [
+    { x: bx, y: BASE_Y },
+    { x: bx, y: BASE_Y - 150 },
+    { x: ex + (bx - ex) * 0.18, y: ey + 170 },
+    { x: ex, y: ey },
+  ];
+});
+
+// One tributary per main stream, joining it low down.
+const tributaries: Curve[] = mains.map((m, k) => {
+  const tj = 0.24 + (k % 3) * 0.05;
+  const j = bezier(m, tj);
+  const sx = Math.min(778, Math.max(22, m[0].x + (k % 2 ? -58 : 58)));
+  const side = sx > j.x ? 1 : -1;
+  return [
+    { x: sx, y: BASE_Y + 6 },
+    { x: sx, y: BASE_Y - 40 },
+    { x: j.x + side * 22, y: j.y + 36 },
+    { x: j.x, y: j.y },
+  ];
+});
+const curves = [...mains, ...tributaries];
+
+// A check on every main stream, drawn across it.
+const gates = mains.map((m) => {
+  const p = bezier(m, GATE_T);
+  const t = tangent(m, GATE_T);
+  const n = { x: -t.y, y: t.x };
+  const bar = (o: number) => {
+    const c = { x: p.x + t.x * o, y: p.y + t.y * o };
+    return { x1: r1(c.x - n.x * 7), y1: r1(c.y - n.y * 7), x2: r1(c.x + n.x * 7), y2: r1(c.y + n.y * 7) };
+  };
+  return { p: { x: r1(p.x), y: r1(p.y) }, bars: [bar(-3.5), bar(3.5)] };
+});
+
+/* ---------------------------------------------------------- everyday work */
+
 type Kind = 'dot' | 'ring' | 'square';
 const tones = ['ns__t1', 'ns__t2', 'ns__t3'];
-const field = Array.from({ length: 36 }, (_, i) => {
-  const kind: Kind = rand(i, 3) < 0.6 ? 'dot' : rand(i, 3) < 0.8 ? 'ring' : 'square';
+const field = Array.from({ length: 48 }, (_, i) => {
+  const roll = rand(i, 3);
+  const kind: Kind = roll < 0.58 ? 'dot' : roll < 0.8 ? 'ring' : 'square';
   return {
-    x: r1(30 + (i / 35) * 740 + (rand(i, 1) - 0.5) * 38),
-    y: r1(405 + rand(i, 2) * 122),
-    r: r1(2.4 + rand(i, 4) * 3.6),
+    x: r1(26 + (i / 47) * 748 + (rand(i, 1) - 0.5) * 30),
+    y: r1(400 + rand(i, 2) * 134),
+    r: r1(2.2 + rand(i, 4) * 3.4),
     kind,
     tone: tones[Math.floor(rand(i, 5) * 3)]!,
-    dur: r1(14 + rand(i, 6) * 14),
-    dx: r1((rand(i, 7) - 0.5) * 22),
-    dy: r1((rand(i, 8) - 0.5) * 16),
+    stream: 0,
+    slot: 0,
   };
 });
-
-// Where each shape settles: on the nearest stream, spaced up its lower half.
-const perStream = new Map<number, number>();
+// Each shape settles on its nearest main stream, queued below the gate.
+const counts = new Array(mains.length).fill(0);
+for (const n of field) {
+  n.stream = bases.reduce((best, bx, k) => (Math.abs(bx - n.x) < Math.abs(bases[best]! - n.x) ? k : best), 0);
+  n.slot = counts[n.stream]++;
+}
 const targets = field.map((n) => {
-  let best = 0;
-  bases.forEach((bx, k) => {
-    if (Math.abs(bx - n.x) < Math.abs(bases[best]! - n.x)) best = k;
-  });
-  const slot = perStream.get(best) ?? 0;
-  perStream.set(best, slot + 1);
-  return bezier(streams[best]!.p, 0.04 + slot * 0.085);
+  const step = Math.min(0.065, 0.4 / Math.max(1, counts[n.stream] - 1));
+  return bezier(mains[n.stream]!, 0.03 + n.slot * step);
 });
 
-// Work rising along each stream: two travellers per stream.
-const travellers = streams.flatMap((s, k) =>
-  [0, 1].map((j) => ({
-    d: s.d,
-    dur: r1(8 + rand(k * 2 + j, 9) * 4),
-    delay: r1(-(j * 0.5 + rand(k, 10) * 0.5) * 10),
-    at: Math.round(28 + j * 38 + rand(k, 11) * 10),
-    r: j ? 2.2 : 3,
+// Work travelling up: three on each main stream, one on each tributary.
+// `t` is where each one sits in the still picture.
+const travellers = [
+  ...mains.flatMap((_, k) =>
+    [0, 1, 2].map((j) => ({
+      c: k,
+      gate: k,
+      speed: r1((0.075 + rand(k * 3 + j, 9) * 0.03) * 1000) / 1000,
+      phase: r1(((j / 3 + rand(k, 10) * 0.2) % 1) * 1000) / 1000,
+      t: 0.2 + j * 0.3 + (k % 2) * 0.05,
+      r: j === 1 ? 3 : 2.3,
+    })),
+  ),
+  ...tributaries.map((_, k) => ({
+    c: mains.length + k,
+    gate: -1,
+    speed: 0.17,
+    phase: r1(rand(k, 12) * 1000) / 1000,
+    t: 0.55,
+    r: 2,
   })),
-);
+].map((tr) => ({ ...tr, at: bezier(curves[tr.c]!, tr.t) }));
 
-// Distant background stars.
-const specks = Array.from({ length: 48 }, (_, i) => ({
+/* ------------------------------------------------------------ backdrop */
+
+// The settled version is smaller on screen, so it draws a lighter sky.
+const light = mode === 'settled';
+const specks = Array.from({ length: light ? 48 : 96 }, (_, i) => ({
   x: r1(rand(i, 12) * W),
-  y: r1(rand(i, 13) * 330),
-  r: r1(0.6 + rand(i, 14) * 0.9),
-  o: r1(0.2 + rand(i, 15) * 0.45),
-  twinkle: rand(i, 16) < 0.35,
-  dur: r1(5 + rand(i, 17) * 7),
+  y: r1(rand(i, 13) * 380),
+  r: r1(0.5 + rand(i, 14) * 0.9),
+  o: r1(0.15 + rand(i, 15) * 0.5),
+  twinkle: rand(i, 16) < 0.3 ? 1 + Math.floor(rand(i, 17) * 3) : 0,
 }));
-
-const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!.y}L${stars[2]!.x} ${stars[2]!.y}`;
+const floor = [
+  { rx: 430, ry: 120, o: 0.16 },
+  { rx: 540, ry: 160, o: 0.1 },
+  { rx: 660, ry: 205, o: 0.06 },
+];
+const checksGate = gates[3]!;
 ---
 
-<div class:list={['ns', `ns--${mode}`, 'shape']} data-scrub={mode === 'hero' ? 'exit' : undefined} data-live>
+<div class:list={['ns', `ns--${mode}`, 'shape', mode === 'settled' && 'is-on']} data-ns={mode} data-live>
   <svg viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false" preserveAspectRatio="xMidYMid meet">
     <defs>
       <radialGradient id={`${id}-glow`}>
@@ -123,44 +229,80 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
         <stop offset="0.35" class="ns__glow-1"></stop>
         <stop offset="1" class="ns__glow-2"></stop>
       </radialGradient>
-      <linearGradient id={`${id}-stream`} gradientUnits="userSpaceOnUse" x1="0" y1={BASE_Y} x2="0" y2="80">
+      <radialGradient id={`${id}-haze`}>
+        <stop offset="0" class="ns__haze-0"></stop>
+        <stop offset="1" class="ns__haze-1"></stop>
+      </radialGradient>
+      <linearGradient id={`${id}-stream`} gradientUnits="userSpaceOnUse" x1="0" y1={BASE_Y} x2="0" y2="90">
         <stop offset="0" class="ns__stream-0"></stop>
         <stop offset="0.55" class="ns__stream-1"></stop>
         <stop offset="1" class="ns__stream-2"></stop>
       </linearGradient>
+      <linearGradient id={`${id}-glint-h`}>
+        <stop offset="0" class="ns__glint-0"></stop>
+        <stop offset="0.5" class="ns__glint-1"></stop>
+        <stop offset="1" class="ns__glint-0"></stop>
+      </linearGradient>
+      <linearGradient id={`${id}-glint-v`} x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" class="ns__glint-0"></stop>
+        <stop offset="0.5" class="ns__glint-1"></stop>
+        <stop offset="1" class="ns__glint-0"></stop>
+      </linearGradient>
     </defs>
 
+    <!-- The sky: haze, distant stars and the ground the work stands on. -->
+    <ellipse class="ns__haze" cx={goals[1]!.x} cy="150" rx="330" ry="170" fill={`url(#${id}-haze)`}></ellipse>
     <g class="ns__specks">
       {
-        specks.map((s, i) => (
-          <circle
-            cx={s.x}
-            cy={s.y}
-            r={s.r}
-            class:list={[s.twinkle && 'ns__twinkle']}
-            style={`--o:${s.o};--dur:${s.dur}s;--i:${i}`}
-          />
+        specks.map((s) => (
+          <circle cx={s.x} cy={s.y} r={s.r} opacity={s.o} class={s.twinkle ? `ns__tw${s.twinkle}` : undefined} />
+        ))
+      }
+    </g>
+    <g class="ns__floor">
+      {floor.map((f) => <ellipse cx={W / 2} cy={BASE_Y + 100} rx={f.rx} ry={f.ry} style={`--o:${f.o}`} />)}
+    </g>
+
+    <!-- The constellation. -->
+    <g class="ns__links">
+      {links.map(([a, b], i) => <line class:list={[i < 2 && 'ns__link--main']} x1={a.x} y1={a.y} x2={b.x} y2={b.y} />)}
+    </g>
+    <g class="ns__minor">
+      {
+        minor.map((m, i) => (
+          <g class="ns__minor-star" style={`--k:${i}`}>
+            <path d={sparkle(m.x, m.y, m.R * 1.8)} />
+          </g>
         ))
       }
     </g>
 
-    <g class="ns__glows">
-      {stars.map((s, i) => <circle class="ns__glow" cx={s.x} cy={s.y} r={s.R * 5.2} fill={`url(#${id}-glow)`} style={`--i:${i}`} />)}
-    </g>
-
-    <path class="ns__constellation" d={constellation} pathLength="1"></path>
-
+    <!-- Streams, tributaries and the checks on the way up. -->
     <g class="ns__streams" stroke={`url(#${id}-stream)`}>
-      {streams.map((s, i) => <path d={s.d} pathLength="1" style={`--i:${i}`} />)}
+      {mains.map((c, i) => <path class="ns__main" d={pathOf(c)} pathLength="1" data-curve style={`--k:${i}`} />)}
+      {tributaries.map((c, i) => <path class="ns__trib" d={pathOf(c)} pathLength="1" data-curve style={`--k:${i}`} />)}
+    </g>
+    <g class="ns__gates">
+      {
+        gates.map((g, i) => (
+          <g class="ns__gate" data-gate={i} style={`--k:${i}`}>
+            <circle class="ns__gate-ring" cx={g.p.x} cy={g.p.y} r="9" />
+            {g.bars.map((b) => (
+              <line x1={b.x1} y1={b.y1} x2={b.x2} y2={b.y2} />
+            ))}
+          </g>
+        ))
+      }
     </g>
 
+    <!-- Everyday work, gathering onto the streams. -->
     <g class="ns__field">
       {
         field.map((n, i) => {
           const t = targets[i]!;
           return (
-            <g class="ns__settle" style={`--tx:${r1(t.x - n.x)}px;--ty:${r1(t.y - n.y)}px`}>
-              <g class="ns__drift" style={`--dx:${n.dx}px;--dy:${n.dy}px;--dur:${n.dur}s;--i:${i}`}>
+            <g class="ns__settle" style={`--tx:${r1(t.x - n.x)}px;--ty:${r1(t.y - n.y)}px;--i:${i}`}>
+              <g data-drift>
                 {n.kind === 'dot' && <circle class:list={['ns__shape', n.tone]} cx={n.x} cy={n.y} r={n.r} />}
                 {n.kind === 'ring' && <circle class:list={['ns__shape', 'ns__ring', n.tone]} cx={n.x} cy={n.y} r={n.r + 0.8} />}
                 {n.kind === 'square' && (
@@ -175,22 +317,34 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
 
     <g class="ns__travellers">
       {
-        travellers.map((t) => (
+        travellers.map((tr) => (
           <circle
-            r={t.r}
-            cx="0"
-            cy="0"
-            style={`offset-path:path('${t.d}');--dur:${t.dur}s;--delay:${t.delay}s;--at:${t.at}%`}
+            cx={r1(tr.at.x)}
+            cy={r1(tr.at.y)}
+            r={tr.r}
+            data-traveller
+            data-c={tr.c}
+            data-gate={tr.gate >= 0 ? tr.gate : undefined}
+            data-speed={tr.speed}
+            data-phase={tr.phase}
           />
         ))
       }
     </g>
 
-    <g class="ns__stars">
+    <!-- The goals. -->
+    <g class="ns__goals">
       {
-        stars.map((s, i) => (
-          <g class="ns__star" style={`--i:${i}`}>
-            <circle class="ns__halo" cx={s.x} cy={s.y} r={s.R * 1.35} />
+        goals.map((s, i) => (
+          <g class="ns__goal" style={`--k:${i === 1 ? 0 : i + 1}`}>
+            <circle class="ns__glow" cx={s.x} cy={s.y} r={s.R * 5.4} fill={`url(#${id}-glow)`} />
+            <circle class="ns__orbit" cx={s.x} cy={s.y} r={s.R * 1.9} />
+            {i === 1 && <circle class="ns__orbit ns__orbit--outer" cx={s.x} cy={s.y} r={s.R * 2.8} />}
+            <g class="ns__glint">
+              <rect x={s.x - s.R * 6} y={s.y - 0.6} width={s.R * 12} height="1.2" fill={`url(#${id}-glint-h)`} />
+              <rect x={s.x - 0.6} y={s.y - s.R * 4} width="1.2" height={s.R * 7} fill={`url(#${id}-glint-v)`} />
+            </g>
+            <circle class="ns__halo" cx={s.x} cy={s.y} r={s.R * 1.3} />
             <path class="ns__sparkle" d={sparkle(s.x, s.y, s.R)} />
             <circle class="ns__core" cx={s.x} cy={s.y} r={s.R * 0.2} />
           </g>
@@ -201,28 +355,146 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
     {
       labels && (
         <g class="ns__labels">
-          <text x={stars[1]!.x} y={stars[1]!.y - 46} text-anchor="middle">
+          <text x={goals[1]!.x} y={goals[1]!.y - 50} text-anchor="middle">
             {labels.goals}
           </text>
           <text x={W - 24} y={H - 4} text-anchor="end">
             {labels.work}
           </text>
+          {labels.checks && (
+            <text class="ns__label--small" x={checksGate.p.x + 16} y={checksGate.p.y + 4}>
+              {labels.checks}
+            </text>
+          )}
         </g>
       )
     }
   </svg>
 </div>
 
-<style>
-  .ns {
-    /* Organised and settled by default: the final state without motion. */
-    --p: 1;
-    position: relative;
-    width: 100%;
+<script>
+  /*
+   * Moves the constellation. Travellers ride the stream curves, the
+   * gathered work breathes gently in place, and each gate lights as work
+   * passes it. Everything is set by SVG attribute, so it behaves the same in
+   * every browser. Runs only while the graphic is on screen.
+   */
+  type Curve = number[];
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const GATE_T = 0.5;
+
+  const at = (c: Curve, t: number): [number, number] => {
+    const u = 1 - t;
+    const a = u * u * u;
+    const b = 3 * u * u * t;
+    const d = 3 * u * t * t;
+    const e = t * t * t;
+    return [a * c[0]! + b * c[2]! + d * c[4]! + e * c[6]!, a * c[1]! + b * c[3]! + d * c[5]! + e * c[7]!];
+  };
+
+  // Fade in at the start of a stream and out as it reaches the star.
+  const fade = (u: number) => (u < 0.07 ? u / 0.07 : u > 0.88 ? Math.max(0, (1 - u) / 0.12) : 1);
+
+  function start(root: HTMLElement): void {
+    const hero = root.dataset.ns === 'hero';
+    const curves = Array.from(root.querySelectorAll<SVGPathElement>('[data-curve]')).map((p) =>
+      (p.getAttribute('d')!.match(/-?\d+(?:\.\d+)?/g) ?? []).map(Number),
+    );
+    const gates = Array.from(root.querySelectorAll<SVGGElement>('[data-gate]')).filter((g) => g.tagName === 'g');
+    const travellers = Array.from(root.querySelectorAll<SVGCircleElement>('[data-traveller]')).map((el) => ({
+      el,
+      c: curves[Number(el.dataset.c)]!,
+      gate: el.dataset.gate !== undefined ? gates[Number(el.dataset.gate)] : undefined,
+      speed: Number(el.dataset.speed),
+      phase: Number(el.dataset.phase),
+      last: 0,
+    }));
+    // Each shape breathes on its own small, slow loop.
+    const rand = (i: number, salt: number) => {
+      const x = Math.sin(i * 127.1 + salt * 311.7) * 43758.5453;
+      return x - Math.floor(x);
+    };
+    const drifts = Array.from(root.querySelectorAll<SVGGElement>('[data-drift]')).map((el, i) => ({
+      el,
+      ax: 0.8 + rand(i, 18) * 1.8,
+      ay: 0.8 + rand(i, 19) * 1.6,
+      w: 0.35 + rand(i, 20) * 0.5,
+      ph: rand(i, 21) * 6.28,
+    }));
+    const timers = new WeakMap<Element, number>();
+    const flash = (gate: Element) => {
+      gate.classList.add('is-pass');
+      clearTimeout(timers.get(gate));
+      timers.set(gate, window.setTimeout(() => gate.classList.remove('is-pass'), 420));
+    };
+
+    // Work starts moving once the streams have drawn.
+    let flowFrom = 0;
+    let visible = false;
+    let frame = 0;
+
+    const tick = (now: number) => {
+      frame = 0;
+      if (!visible || document.hidden) return;
+      if (flowFrom && now >= flowFrom) {
+        const s = (now - flowFrom) / 1000;
+        for (const tr of travellers) {
+          const u = (s * tr.speed + tr.phase) % 1;
+          const [x, y] = at(tr.c, u);
+          tr.el.setAttribute('cx', x.toFixed(1));
+          tr.el.setAttribute('cy', y.toFixed(1));
+          tr.el.style.opacity = fade(u).toFixed(2);
+          if (tr.gate && tr.last < GATE_T && u >= GATE_T) flash(tr.gate);
+          tr.last = u;
+        }
+      }
+      // The gathered work starts breathing once it has settled.
+      const t = now / 1000;
+      if (flowFrom && now >= flowFrom + 500) {
+        for (const d of drifts) {
+          const x = d.ax * Math.sin(t * d.w + d.ph);
+          const y = d.ay * Math.cos(t * d.w * 0.8 + d.ph);
+          d.el.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)})`);
+        }
+      }
+      frame = requestAnimationFrame(tick);
+    };
+
+    const run = () => {
+      if (visible && !document.hidden && !frame) frame = requestAnimationFrame(tick);
+    };
+
+    // Until work starts flowing, the travellers wait out of sight.
+    if (hero) for (const tr of travellers) tr.el.style.opacity = '0';
+
+    new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          visible = entry.isIntersecting;
+          if (entry.intersectionRatio >= 0.2 && !flowFrom) {
+            root.classList.add('is-on');
+            flowFrom = performance.now() + (hero ? 1100 : 0);
+          }
+        }
+        run();
+      },
+      { threshold: [0, 0.2] },
+    ).observe(root);
+    document.addEventListener('visibilitychange', run);
   }
 
-  :global(.has-motion) .ns--hero {
-    --p: 0;
+  if (!reduceMotion.matches) {
+    for (const root of document.querySelectorAll<HTMLElement>('[data-ns]')) start(root);
+  }
+</script>
+
+<style is:global>
+  /* Global, not scoped: every rule is prefixed .ns, and scoping would add an
+     attribute to each of several hundred SVG elements. */
+  .ns {
+    position: relative;
+    width: 100%;
   }
 
   .ns svg {
@@ -235,12 +507,12 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
 
   .ns__glow-0 {
     stop-color: var(--lime-200);
-    stop-opacity: 0.55;
+    stop-opacity: 0.6;
   }
 
   .ns__glow-1 {
     stop-color: var(--sage-300);
-    stop-opacity: 0.18;
+    stop-opacity: 0.2;
   }
 
   .ns__glow-2 {
@@ -248,14 +520,24 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
     stop-opacity: 0;
   }
 
+  .ns__haze-0 {
+    stop-color: var(--sage-300);
+    stop-opacity: 0.12;
+  }
+
+  .ns__haze-1 {
+    stop-color: var(--sage-300);
+    stop-opacity: 0;
+  }
+
   .ns__stream-0 {
     stop-color: var(--sage-300);
-    stop-opacity: 0.05;
+    stop-opacity: 0.08;
   }
 
   .ns__stream-1 {
     stop-color: var(--sage-300);
-    stop-opacity: 0.38;
+    stop-opacity: 0.45;
   }
 
   .ns__stream-2 {
@@ -263,32 +545,88 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
     stop-opacity: 0.95;
   }
 
+  .ns__glint-0 {
+    stop-color: var(--white);
+    stop-opacity: 0;
+  }
+
+  .ns__glint-1 {
+    stop-color: var(--white);
+    stop-opacity: 0.85;
+  }
+
   .ns__specks circle {
     fill: var(--paper);
-    opacity: var(--o);
   }
 
-  .ns__glow {
-    opacity: calc(0.6 + 0.4 * var(--p));
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-
-  .ns__constellation {
+  .ns__floor ellipse {
     fill: none;
     stroke: var(--sage-300);
     stroke-width: 1;
-    stroke-dasharray: 0.006 0.012;
-    opacity: 0.55;
+    opacity: var(--o);
+  }
+
+  .ns__links line {
+    stroke: var(--sage-300);
+    stroke-width: 0.8;
+    stroke-dasharray: 2 5;
+    opacity: 0.35;
+  }
+
+  .ns__links .ns__link--main {
+    stroke-width: 1;
+    opacity: 0.6;
+  }
+
+  .ns__minor path {
+    fill: var(--paper);
+    opacity: 0.75;
   }
 
   .ns__streams path {
     fill: none;
-    stroke-width: 1.5;
     stroke-linecap: round;
     stroke-dasharray: 1;
     stroke-dashoffset: 0;
-    opacity: calc(0.55 + 0.45 * var(--p));
+  }
+
+  .ns__main {
+    stroke-width: 1.6;
+  }
+
+  .ns__trib {
+    stroke-width: 1;
+    opacity: 0.7;
+  }
+
+  .ns__gate line {
+    stroke: var(--sage-200);
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    transition: stroke var(--dur-fast) ease;
+  }
+
+  .ns__gate-ring {
+    fill: none;
+    stroke: var(--lime-200);
+    stroke-width: 1;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    transform: scale(0.6);
+    transition:
+      opacity 0.4s ease,
+      transform 0.6s var(--ease-out);
+  }
+
+  .ns__gate.is-pass line {
+    stroke: var(--lime-200);
+  }
+
+  .ns__gate.is-pass .ns__gate-ring {
+    opacity: 0.8;
+    transform: scale(1.2);
+    transition-duration: 0.12s, 0.3s;
   }
 
   .ns__t1 {
@@ -301,7 +639,6 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
 
   .ns__t3 {
     fill: var(--lime-200);
-    opacity: 0.85;
   }
 
   .ns__ring {
@@ -321,43 +658,48 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
     stroke: var(--lime-200);
   }
 
+  .ns__travellers circle {
+    fill: var(--lime-200);
+  }
+
+  .ns__glow,
+  .ns__orbit,
+  .ns__glint,
+  .ns__goal,
+  .ns__minor-star,
+  .ns__gate,
   .ns__shape {
     transform-box: fill-box;
     transform-origin: center;
   }
 
-  .ns__travellers circle {
-    fill: var(--lime-200);
-    offset-rotate: 0deg;
-    offset-distance: var(--at);
-    opacity: 0.9;
+  .ns__orbit {
+    fill: none;
+    stroke: var(--lime-200);
+    stroke-width: 0.8;
+    stroke-dasharray: 1.5 5;
+    opacity: 0.45;
   }
 
-  /* Browsers without CSS motion paths would draw the travellers at the origin. */
-  @supports not (offset-path: path('M0 0')) {
-    .ns__travellers {
-      display: none;
-    }
+  .ns__orbit--outer {
+    stroke-dasharray: 0.8 9;
+    opacity: 0.3;
+  }
+
+  .ns__glint {
+    opacity: 0.55;
   }
 
   .ns__halo {
     fill: none;
     stroke: var(--lime-200);
     stroke-width: 1;
-    opacity: 0.35;
+    opacity: 0.4;
   }
 
-  .ns__sparkle {
-    fill: var(--white);
-  }
-
+  .ns__sparkle,
   .ns__core {
     fill: var(--white);
-  }
-
-  .ns__star {
-    transform-box: fill-box;
-    transform-origin: center;
   }
 
   .ns__labels {
@@ -369,126 +711,185 @@ const constellation = `M${stars[0]!.x} ${stars[0]!.y}L${stars[1]!.x} ${stars[1]!
     text-transform: uppercase;
   }
 
+  .ns__labels .ns__label--small {
+    font-size: 10px;
+    fill: var(--lime-200);
+  }
+
   @media (max-width: 39.99rem) {
     .ns__labels {
       display: none;
     }
   }
 
-  /* Scroll: the loose field settles onto the streams. */
+  /* The gathered field: each shape sits on its stream. */
   .ns__settle {
-    transform: translate(calc(var(--tx) * var(--p)), calc(var(--ty) * var(--p)));
+    transform: translate(var(--tx), var(--ty));
   }
 
-  /* ----- motion (removed entirely under reduced motion) ----- */
+  /* ----- motion, only where the visitor has not asked for less ----- */
 
   @media (prefers-reduced-motion: no-preference) {
-    :global(.has-motion) .ns__glow {
-      animation: ns-pulse 6s ease-in-out infinite alternate;
-      animation-delay: calc(var(--i) * -2s);
+    /* Gentle loops, which pause while off screen (see motion.ts). */
+    .ns__glow {
+      animation: ns-pulse 5s ease-in-out infinite alternate;
     }
 
-    :global(.has-motion) .ns__twinkle {
-      animation: ns-twinkle var(--dur) ease-in-out infinite alternate;
-      animation-delay: calc(var(--i) * -0.37s);
+    .ns__goal:nth-child(2) .ns__glow {
+      animation-delay: -1.7s;
     }
 
-    :global(.has-motion) .ns__travellers circle {
-      animation: ns-rise var(--dur) linear var(--delay) infinite;
+    .ns__goal:nth-child(3) .ns__glow {
+      animation-delay: -3.4s;
     }
 
-    :global(.has-motion) .ns--hero .ns__drift {
-      animation: ns-drift var(--dur) ease-in-out infinite alternate;
-      animation-delay: calc(var(--i) * -1.3s);
+    .ns__orbit {
+      animation: ns-spin 60s linear infinite;
     }
 
-    /* Entrance, hero only. */
-    :global(.has-motion) .ns--hero .ns__star {
-      animation: ns-star 1.4s var(--ease-out) both;
-      animation-delay: calc(0.2s + var(--i) * 0.25s);
+    .ns__orbit--outer {
+      animation-duration: 90s;
+      animation-direction: reverse;
     }
 
-    :global(.has-motion) .ns--hero .ns__constellation {
-      animation: ns-fade 1.6s ease 0.9s both;
+    .ns__glint {
+      animation: ns-shimmer 4.5s ease-in-out infinite alternate;
     }
 
-    :global(.has-motion) .ns--hero .ns__streams path {
-      animation: ns-draw 2.2s var(--ease-in-out) both;
-      animation-delay: calc(0.6s + var(--i) * 0.14s);
+    .ns__tw1 {
+      animation: ns-twinkle 4.5s ease-in-out infinite alternate;
     }
 
-    :global(.has-motion) .ns--hero .ns__shape {
-      animation: ns-appear 1.6s var(--ease-out) both;
-      animation-delay: calc(var(--i) * 30ms);
+    .ns__tw2 {
+      animation: ns-twinkle 7s ease-in-out -2s infinite alternate;
     }
 
-    :global(.has-motion) .ns--hero .ns__labels {
-      animation: ns-fade 1.2s ease 1.6s both;
+    .ns__tw3 {
+      animation: ns-twinkle 9.5s ease-in-out -5s infinite alternate;
+    }
+
+    .ns__minor-star {
+      animation: ns-shimmer 6s ease-in-out infinite alternate;
+      animation-delay: calc(var(--k) * -0.8s);
+    }
+  }
+
+  /*
+   * The hero assembles when it comes into view. Before then (and only where
+   * scripting is on and motion is welcome) it waits in its starting state;
+   * the script adds .is-on, and these transitions play out in about 1.5s.
+   */
+  @media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+    .ns--hero .ns__goal {
+      transition:
+        opacity 0.7s ease,
+        transform 1s var(--ease-out);
+      transition-delay: calc(var(--k) * 0.12s);
+    }
+
+    .ns--hero .ns__links,
+    .ns--hero .ns__minor,
+    .ns--hero .ns__labels,
+    .ns--hero .ns__travellers {
+      transition: opacity 0.9s ease 0.35s;
+    }
+
+    .ns--hero .ns__labels {
+      transition-delay: 1.2s;
+    }
+
+    .ns--hero .ns__main {
+      transition: stroke-dashoffset 1s var(--ease-in-out);
+      transition-delay: calc(0.25s + var(--k) * 0.06s);
+    }
+
+    .ns--hero .ns__trib {
+      transition: stroke-dashoffset 0.8s var(--ease-in-out);
+      transition-delay: calc(0.6s + var(--k) * 0.06s);
+    }
+
+    .ns--hero .ns__gate {
+      transition:
+        opacity 0.5s ease,
+        transform 0.7s var(--ease-out);
+      transition-delay: calc(1s + var(--k) * 0.05s);
+    }
+
+    .ns--hero .ns__shape {
+      transition: opacity 0.45s ease;
+      transition-delay: calc(var(--i) * 8ms);
+    }
+
+    .ns--hero .ns__settle {
+      transition: transform 1.1s var(--ease-out);
+      transition-delay: calc(0.4s + var(--i) * 12ms);
+    }
+
+    .ns--hero:not(.is-on) .ns__goal {
+      opacity: 0;
+      transform: scale(0.3) rotate(-30deg);
+    }
+
+    .ns--hero:not(.is-on) :is(.ns__links, .ns__minor, .ns__labels, .ns__shape, .ns__travellers) {
+      opacity: 0;
+    }
+
+    .ns--hero:not(.is-on) .ns__streams path {
+      stroke-dashoffset: 1;
+    }
+
+    .ns--hero:not(.is-on) .ns__gate {
+      opacity: 0;
+      transform: scale(0.4);
+    }
+
+    .ns--hero:not(.is-on) .ns__settle {
+      transform: none;
+    }
+
+    /* If the script never runs, show the picture anyway after a moment. */
+    .ns--hero:not(.is-on) :is(.ns__goal, .ns__links, .ns__minor, .ns__labels, .ns__shape, .ns__travellers, .ns__streams path, .ns__gate) {
+      animation: ns-fallback 0.8s ease 2.5s forwards;
     }
   }
 
   @keyframes ns-pulse {
     from {
-      transform: scale(0.86);
+      transform: scale(0.88);
+      opacity: 0.85;
     }
     to {
-      transform: scale(1.08);
+      transform: scale(1.06);
+      opacity: 1;
+    }
+  }
+
+  @keyframes ns-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @keyframes ns-shimmer {
+    from {
+      opacity: 0.35;
+    }
+    to {
+      opacity: 0.85;
     }
   }
 
   @keyframes ns-twinkle {
     to {
-      opacity: 0.08;
+      opacity: 0.06;
     }
   }
 
-  @keyframes ns-rise {
-    from {
-      offset-distance: 0%;
-      opacity: 0;
-    }
-    12% {
-      opacity: 0.95;
-    }
-    85% {
-      opacity: 0.95;
-    }
+  @keyframes ns-fallback {
     to {
-      offset-distance: 100%;
-      opacity: 0;
-    }
-  }
-
-  /* Drift fades out as the field organises. */
-  @keyframes ns-drift {
-    to {
-      transform: translate(calc(var(--dx) * (1 - var(--p))), calc(var(--dy) * (1 - var(--p))));
-    }
-  }
-
-  @keyframes ns-star {
-    from {
-      opacity: 0;
-      transform: scale(0.3) rotate(-45deg);
-    }
-  }
-
-  @keyframes ns-fade {
-    from {
-      opacity: 0;
-    }
-  }
-
-  @keyframes ns-draw {
-    from {
-      stroke-dashoffset: 1;
-    }
-  }
-
-  @keyframes ns-appear {
-    from {
-      opacity: 0;
-      transform: scale(0.3);
+      opacity: 1;
+      transform: none;
+      stroke-dashoffset: 0;
     }
   }
 </style>

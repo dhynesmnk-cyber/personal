@@ -34,8 +34,8 @@ import { services } from '../content/services';
       <h2 class="block-title" id="audience-title">{services.audienceHeading}</h2>
       <ul class="audience" role="list">
         {
-          services.audience.map((a) => (
-            <li>
+          services.audience.map((a, i) => (
+            <li data-fade style={`--d:${i}`}>
               <h3>{a.title}</h3>
               <p>{a.body}</p>
             </li>
@@ -46,8 +46,8 @@ import { services } from '../content/services';
       <h2 class="block-title caps-title" id="caps-title">{services.capabilitiesHeading}</h2>
       <div class="caps">
         {
-          services.capabilities.map((c) => (
-            <div class="caps__col">
+          services.capabilities.map((c, i) => (
+            <div class="caps__col" data-fade style={`--d:${i}`}>
               <h3>{c.title}</h3>
               <ul role="list">
                 {c.items.map((it) => (
@@ -59,7 +59,7 @@ import { services } from '../content/services';
         }
       </div>
 
-      <div class="lead-cta">
+      <div class="lead-cta" data-fade>
         <p>{services.ctaLead}</p>
         <CTAButton />
       </div>

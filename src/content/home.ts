@@ -9,7 +9,7 @@ export const home = {
     sub: 'I work with executive teams to turn AI ambitions into governed workflows that non-technical staff use with confidence.',
     secondary: { label: 'See the results', href: '#results' },
     /** Labels inside the hero graphic. */
-    sky: { goals: 'Your goals', work: 'Everyday work' },
+    sky: { goals: 'Your goals', work: 'Everyday work', checks: 'Checks' },
   },
   results: {
     eyebrow: 'Results',

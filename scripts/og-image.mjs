@@ -69,13 +69,12 @@ try {
   for (const card of cards) {
     await page.goto(`${base}/contact/`, { waitUntil: 'networkidle' });
     await page.evaluate(
-      ({ card, html }) => {
+      ({ html }) => {
         const sky = document.querySelector('.contact-sky')?.innerHTML ?? '';
         const mark = document.querySelector('.wordmark .mark')?.outerHTML ?? '';
         document.body.innerHTML = html.replace('%SKY%', sky).replace('%MARK%', mark);
       },
       {
-        card,
         html: `
           <div class="og">
             <div class="og__brand">%MARK%<span><b>David Hynes</b><small>Consulting</small></span></div>

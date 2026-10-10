@@ -31,7 +31,7 @@ import { contact } from '../content/contact';
         <ol class="steps" role="list">
           {
             contact.steps.map((s, i) => (
-              <li>
+              <li data-fade style={`--d:${i}`}>
                 <span class="steps__num" aria-hidden="true">
                   {i + 1}
                 </span>
@@ -43,7 +43,7 @@ import { contact } from '../content/contact';
         </ol>
       </div>
 
-      <aside class="details" aria-labelledby="details-title">
+      <aside class="details" aria-labelledby="details-title" data-fade style="--d:1">
         <h2 class="details__title" id="details-title">{contact.detailsHeading}</h2>
         <dl>
           <div>

@@ -9,7 +9,7 @@ import LayerStack from './shapes/LayerStack.astro';
 <ol class="svc" role="list">
   {
     services.phases.map((ph, i) => (
-      <li class="svc__card stack-host">
+      <li class="svc__card stack-host" data-fade style={`--d:${i}`}>
         <div class="svc__visual">
           <LayerStack layers={i + 1} gate={i >= 1} flow={i === 2} accentTop={i === 2} />
         </div>

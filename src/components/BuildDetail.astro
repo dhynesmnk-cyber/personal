@@ -46,7 +46,7 @@ const images = { observatory, bee };
 
     <h2 class="project__gov-title">{p.governanceTitle}</h2>
     <ul class="project__gov" role="list">
-      {p.governance.map((g) => <li>{g}</li>)}
+      {p.governance.map((g, i) => <li data-fade style={`--d:${i}`}>{g}</li>)}
     </ul>
 
     <div class="project__pipe">

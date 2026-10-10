@@ -33,9 +33,9 @@ const { results, record } = home;
       </div>
       <ul class="results" role="list">
         {
-          results.items.map((r) => (
-            <li class="result-card">
-              <p class="result-card__stat">{r.stat}</p>
+          results.items.map((r, i) => (
+            <li class="result-card" data-fade style={`--d:${i}`}>
+              <p class="result-card__stat" data-count>{r.stat}</p>
               <p class="result-card__label">{r.label}</p>
               <h3 class="result-card__client">
                 <a href={workHref(r.slug)}>{r.client}</a>
@@ -48,7 +48,7 @@ const { results, record } = home;
         }
       </ul>
 
-      <div class="record">
+      <div class="record" data-fade>
         <p class="record__label">{record.label}</p>
         <ul class="record__list" role="list">
           {record.items.map((item) => <li>{item}</li>)}

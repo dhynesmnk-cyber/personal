@@ -8,7 +8,7 @@ import NorthStar from './shapes/NorthStar.astro';
 
 <section class="section on-dark cta-band" aria-labelledby="cta-band-title">
   <div class="container cta-band__grid">
-    <div class="cta-band__copy">
+    <div class="cta-band__copy" data-fade>
       <h2 id="cta-band-title">{ctaBand.heading}</h2>
       <p class="cta-band__body">{ctaBand.body}</p>
       <div class="cta-band__actions">
@@ -22,7 +22,7 @@ import NorthStar from './shapes/NorthStar.astro';
         )
       }
     </div>
-    <div class="cta-band__visual">
+    <div class="cta-band__visual" data-fade style="--d:2">
       <NorthStar mode="settled" id="ns-cta" />
     </div>
   </div>

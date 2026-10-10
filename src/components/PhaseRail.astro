@@ -12,7 +12,7 @@ import LayerStack from './shapes/LayerStack.astro';
 <ol class="phases" role="list" data-scrub>
   {
     services.phases.map((ph, i) => (
-      <li class="phase stack-host" id={`phase-${ph.n}`} style={`--k:${i}`}>
+      <li class="phase stack-host" id={`phase-${ph.n}`} style={`--k:${i};--d:${i}`} data-fade>
         <span class="phase__node" aria-hidden="true" />
         <div class="phase__visual">
           <LayerStack layers={i + 1} gate={i >= 1} flow={i === 2} accentTop={i === 2} />

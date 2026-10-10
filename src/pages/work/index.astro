@@ -17,7 +17,7 @@ const builds = workItems.filter((w) => w.kind === 'build');
     <div class="container">
       <h2 class="block-title" id="clients-title">{work.clientHeading}</h2>
       <div class="grid grid--3">
-        {clients.map((item) => <WorkCard item={item} />)}
+        {clients.map((item, i) => <WorkCard item={item} index={i} />)}
       </div>
     </div>
   </section>
@@ -29,8 +29,8 @@ const builds = workItems.filter((w) => w.kind === 'build');
       </SectionHead>
       <ul class="checks" role="list">
         {
-          work.transparency.map((pt) => (
-            <li>
+          work.transparency.map((pt, i) => (
+            <li data-fade style={`--d:${i}`}>
               <span class="checks__gate" aria-hidden="true">
                 <span />
                 <span />
@@ -42,7 +42,7 @@ const builds = workItems.filter((w) => w.kind === 'build');
         }
       </ul>
       <div class="grid grid--2">
-        {builds.map((item) => <WorkCard item={item} />)}
+        {builds.map((item, i) => <WorkCard item={item} index={i} />)}
       </div>
     </div>
   </section>

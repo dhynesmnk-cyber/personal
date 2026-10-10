@@ -31,7 +31,7 @@ Static Astro build. No trackers, no third-party scripts, under 2 KB of shared Ja
 | Logo wall | `logos.ts`, in three tiers: frontier labs, tools, infrastructure. Add or remove an entry and the sprite and footer update on the next build. Marks come from `simple-icons` (CC0) and `@lobehub/icons-static-svg` (MIT). Keep it to well-known models and tools actually used. |
 | Case studies and builds | `work.ts`. A new build needs a screenshot in `src/assets/work/` and an entry in `builds`. |
 | Coldpath case study | Copy in `coldpath.ts`; the widgets' words in `src/scripts/coldpath/copy.ts`; the engine rules in `src/scripts/coldpath/core.ts` (ported unchanged; leave them alone). The prototype and its data snapshot are static files in `public/work/coldpath/`. The 60-minute run button emails with the subject "Whitespace run", separately from `BOOKING_URL`. |
-| Coldpath data badge | `.github/workflows/coldpath-freshness-pull.yml` copies `website/data/freshness.json` from the coldpath repo every Monday, validates it and commits it. Until that repo publishes the file, the workflow fails and the page keeps showing the 13 September 2026 snapshot. |
+| Coldpath data badge | `.github/workflows/coldpath-freshness-pull.yml` copies `website/data/freshness.json` from the coldpath repo, validates it and commits it. Its Monday schedule is paused until that repo publishes the file; it can be run by hand from the Actions tab. Until then the page shows the 13 September 2026 snapshot. |
 | Parliamentary submission link | `LINKS.submission` in `brand.ts`. The link appears once it is set. |
 | Oral evidence date | `insights.submission.record` in `insights.ts` |
 | Articles | Add a page in `src/pages/insights/` using `src/layouts/Article.astro`, and list it in `insights.articles`. It then shows on Insights and in the Insights menu. |
@@ -75,10 +75,12 @@ tests/site.spec.ts            the test suite
 - **Palette.** Olive and forest greens on a warm paper base. Every text pairing in `tokens.css` passes AA, and the ratios are noted in the file.
 - **Type.** Newsreader for headings and Inter for body, both self-hosted.
 - **Shapes.**
-  - `NorthStar` (the hero): the client's goals are the bright stars, everyday work is the field below, and work rises along streams towards the goals. The field organises as you scroll. A settled version closes every page.
+  - `NorthStar` (the hero): the client's goals are the bright stars, everyday work is the field below, and work rises along streams towards them, passing a check on the way. It assembles in about a second and a half as soon as it is on screen. Its motion is driven by a small script that moves SVG elements by attribute, so it runs the same in Safari as in Chrome. A settled version closes every page.
   - `LayerStack` (infrastructure) drops into place and spreads apart when you hover a card.
   - The diagrams are real HTML lists, so they read correctly with a screen reader.
-- **Motion policy.** Motion is opt-in. With reduced motion requested, or without JavaScript, every shape renders in its final state, and the logo wall is a static grid. While the logo wall scrolls, a visible Pause button stops it (WCAG 2.2.2).
+- **Motion policy.** Motion is opt-in. With reduced motion requested, or without JavaScript, every shape renders in its final state, everything is visible, and the logo wall is a static grid. While the logo wall scrolls, a visible Pause button stops it (WCAG 2.2.2).
+- **Soft entrances.** Add `data-fade` (and `style="--d:1"` and so on for a cascade) to any block to have it fade up as it scrolls into view; anything on screen at load is left alone. Add `data-count` to a number like `112` or `65%` inside it to count it up. Page openings rise in on load (`.rise`).
+- **Older phones.** `vite.build.cssTarget` keeps the CSS readable by Safari 14 and later; without it the minifier writes media queries in a syntax Safari only reads from 16.4.
 - **Speed.** Each page's CSS is inlined into its head (about 6 to 10 KB gzipped), so nothing blocks the first paint. Fonts are preloaded with `font-display: optional`, and on small screens the header starts collapsed wherever scripting is on, so nothing shifts as the page loads.
 - **Security.** Every page carries a strict Content-Security-Policy in a meta tag (`Base.astro`): no inline script and no third-party origins, and Astro is configured never to inline scripts. `netlify.toml` adds what a meta tag cannot: only the site may frame its pages. The Coldpath prototype is a single static file with an inline script, so it gets its own header policy that lets it run, makes no network calls, and can only be framed by the site. The prototype is excluded from the accessibility tests; the page around it is not.
 
