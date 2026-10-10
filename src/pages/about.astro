@@ -12,7 +12,7 @@ const { founder } = about;
 <Base title={about.title} description={about.description}>
   <PageHero eyebrow={about.hero.eyebrow} heading={about.hero.heading} lede={about.hero.lede} />
 
-  <section class="section" aria-labelledby="founder-title">
+  <section class="section" id="founder" aria-labelledby="founder-title">
     <div class="container founder">
       <div class="founder__copy">
         <SectionHead eyebrow={founder.eyebrow} heading={founder.name} id="founder-title">
@@ -32,7 +32,7 @@ const { founder } = about;
     </div>
   </section>
 
-  <section class="section section--alt" aria-labelledby="principles-title">
+  <section class="section section--alt" id="principles" aria-labelledby="principles-title">
     <div class="container">
       <h2 class="block-title" id="principles-title">{about.principlesHeading}</h2>
       <ol class="principles" role="list">
@@ -51,7 +51,7 @@ const { founder } = about;
     </div>
   </section>
 
-  <section class="section" aria-labelledby="experience-title">
+  <section class="section" id="experience" aria-labelledby="experience-title">
     <div class="container">
       <div class="history">
         <h2 class="history__title" id="experience-title">{about.experienceHeading}</h2>

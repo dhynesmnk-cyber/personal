@@ -4,15 +4,14 @@ import type { Build } from '../content/work';
 import Arrow from './Arrow.astro';
 import GatePipeline from './shapes/GatePipeline.astro';
 import observatory from '../assets/work/observatory.png';
-import coldpath from '../assets/work/coldpath.png';
 import bee from '../assets/work/bee.png';
 
-/** The body of one of our own builds. The page hero carries the h1. */
+/** The body of one of my own builds. The page hero carries the h1. */
 interface Props {
   build: Build;
 }
 const { build: p } = Astro.props;
-const images = { observatory, coldpath, bee };
+const images = { observatory, bee };
 ---
 
 <div class="project">

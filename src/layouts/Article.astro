@@ -1,0 +1,115 @@
+---
+import Base from './Base.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Arrow from '../components/Arrow.astro';
+import { brand } from '../content/brand';
+
+/** A long-form insight: the page hero, a byline, then the article as prose (the default slot). */
+interface Props {
+  title: string;
+  description: string;
+  eyebrow: string;
+  lede: string;
+  /** Shown in the byline, e.g. "October 2026". */
+  date: string;
+  /** ISO date for structured data. */
+  published: string;
+  readingTime: string;
+  context?: string;
+  image?: string;
+  imageAlt?: string;
+}
+const { title, description, eyebrow, lede, date, published, readingTime, context, image, imageAlt } = Astro.props;
+
+const schema = {
+  '@type': 'Article',
+  headline: title,
+  description,
+  datePublished: published,
+  author: { '@type': 'Person', name: brand.founder },
+  publisher: { '@type': 'Organization', name: brand.name },
+};
+---
+
+<Base title={title} description={description} image={image} imageAlt={imageAlt} type="article" schema={schema}>
+  <PageHero eyebrow={eyebrow} heading={title} lede={lede}>
+    <a slot="before" class="back-link" href="/insights/">
+      <Arrow direction="left" />
+      All insights
+    </a>
+    <p slot="after" class="byline">
+      <span>{brand.founder}</span>
+      <span>{date}</span>
+      <span>{readingTime}</span>
+      {context && <span>{context}</span>}
+    </p>
+  </PageHero>
+
+  <article class="section">
+    <div class="container">
+      <div class="article">
+        <slot />
+      </div>
+    </div>
+  </article>
+
+  <CtaBand />
+</Base>
+
+<style>
+  .byline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0;
+    font-size: 0.9375rem;
+    color: var(--ink-muted);
+  }
+
+  .byline span + span::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    margin: 0 0.75rem 0.2em;
+    border-radius: 50%;
+    background: currentColor;
+    vertical-align: middle;
+  }
+
+  .byline span:first-child {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .article {
+    max-width: 44rem;
+  }
+
+  .article > :global(* + *) {
+    margin-top: 1.15em;
+  }
+
+  .article > :global(:first-child) {
+    margin-top: 0;
+  }
+
+  .article :global(p),
+  .article :global(li) {
+    font-size: var(--step-1);
+    line-height: 1.65;
+  }
+
+  .article :global(h2) {
+    margin-top: 2.2em;
+    font-size: var(--step-3);
+  }
+
+  .article :global(h2 + *) {
+    margin-top: 0.75em;
+  }
+
+  .article :global(em) {
+    font-style: italic;
+  }
+</style>

@@ -1,5 +1,6 @@
 ---
 import { brand, cta, nav } from '../content/brand';
+import { menuToggleLabel, menus } from '../content/menus';
 import CTAButton from './CTAButton.astro';
 import Mark from './Mark.astro';
 
@@ -24,15 +25,48 @@ const [first, ...rest] = brand.name.split(' ');
     </button>
 
     <nav class="site-nav" id="site-nav" aria-label="Main">
-      <ul role="list">
+      <ul class="site-nav__list" role="list">
         {
-          nav.map((item) => (
-            <li>
-              <a href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
-                {item.label}
-              </a>
-            </li>
-          ))
+          nav.map((item) => {
+            const links = menus[item.href];
+            const id = `menu-${item.label.toLowerCase()}`;
+            return (
+              <li class="nav-item" data-nav-item={links ? '' : undefined}>
+                <a class="nav-link" href={item.href} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                  {item.label}
+                </a>
+                {links && (
+                  <button
+                    class="nav-toggle"
+                    type="button"
+                    aria-expanded="false"
+                    aria-controls={id}
+                    aria-label={menuToggleLabel(item.label)}
+                    hidden
+                    data-nav-toggle
+                  >
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true" focusable="false">
+                      <path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                  </button>
+                )}
+                {links && (
+                  <div class="nav-panel" id={id}>
+                    <ul class="nav-panel__list" role="list">
+                      {links.map((l) => (
+                        <li>
+                          <a class="nav-panel__link" href={l.href}>
+                            <span class="nav-panel__label">{l.label}</span>
+                            {l.note && <span class="nav-panel__note">{l.note}</span>}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </li>
+            );
+          })
         }
       </ul>
     </nav>
@@ -44,21 +78,79 @@ const [first, ...rest] = brand.name.split(' ');
 </header>
 
 <script>
-  // Collapse the nav behind a menu button on small screens. Without this
-  // script the nav simply wraps onto its own row, so it always works.
+  // Without this script the nav wraps onto its own row and every top-level
+  // link works; on wide screens the dropdowns still open on hover and focus.
+  // With it: a menu button on small screens, and disclosure dropdowns that
+  // open on hover (with a short intent delay), on click or with the keyboard.
   const header = document.querySelector<HTMLElement>('[data-site-header]');
   const button = header?.querySelector<HTMLButtonElement>('[data-menu-btn]');
   if (header && button) {
     header.dataset.js = '';
     button.hidden = false;
-    const setOpen = (open: boolean) => {
+    const wide = window.matchMedia('(min-width: 60rem)');
+    const items = Array.from(header.querySelectorAll<HTMLElement>('[data-nav-item]'));
+
+    const toggleOf = (item: HTMLElement) => item.querySelector<HTMLButtonElement>('[data-nav-toggle]')!;
+    const setItem = (item: HTMLElement, open: boolean) => {
+      item.toggleAttribute('data-open', open);
+      toggleOf(item).setAttribute('aria-expanded', String(open));
+    };
+    const openItem = () => items.find((item) => item.hasAttribute('data-open'));
+    const closeAll = (except?: HTMLElement) => items.forEach((item) => item !== except && setItem(item, false));
+
+    const setMenu = (open: boolean) => {
       button.setAttribute('aria-expanded', String(open));
       header.toggleAttribute('data-open', open);
+      if (!open) closeAll();
     };
-    button.addEventListener('click', () => setOpen(button.getAttribute('aria-expanded') !== 'true'));
+    button.addEventListener('click', () => setMenu(button.getAttribute('aria-expanded') !== 'true'));
+
+    let timer = 0;
+    for (const item of items) {
+      const toggle = toggleOf(item);
+      toggle.hidden = false;
+      toggle.addEventListener('click', () => {
+        const open = !item.hasAttribute('data-open');
+        closeAll(item);
+        setItem(item, open);
+      });
+      toggle.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowDown') return;
+        e.preventDefault();
+        closeAll(item);
+        setItem(item, true);
+        item.querySelector<HTMLAnchorElement>('.nav-panel a')?.focus();
+      });
+      item.addEventListener('pointerenter', (e) => {
+        if (e.pointerType !== 'mouse' || !wide.matches) return;
+        clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          closeAll(item);
+          setItem(item, true);
+        }, 90);
+      });
+      item.addEventListener('pointerleave', (e) => {
+        if (e.pointerType !== 'mouse' || !wide.matches) return;
+        clearTimeout(timer);
+        timer = window.setTimeout(() => setItem(item, false), 200);
+      });
+      item.addEventListener('focusout', (e) => {
+        if (wide.matches && !item.contains(e.relatedTarget as Node | null)) setItem(item, false);
+      });
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!header.contains(e.target as Node)) closeAll();
+    });
+
     header.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && header.hasAttribute('data-open')) {
-        setOpen(false);
+      if (e.key !== 'Escape') return;
+      const item = openItem();
+      if (item) {
+        setItem(item, false);
+        toggleOf(item).focus();
+      } else if (header.hasAttribute('data-open')) {
+        setMenu(false);
         button.focus();
       }
     });
@@ -120,14 +212,22 @@ const [first, ...rest] = brand.name.split(' ');
     flex-basis: 100%;
   }
 
-  .site-nav ul {
+  .site-nav__list {
     display: flex;
     flex-wrap: wrap;
     gap: 0 1.25rem;
+    margin: 0;
     padding-bottom: 0.5rem;
   }
 
-  .site-nav a {
+  .nav-item {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .nav-link {
     display: inline-flex;
     align-items: center;
     min-height: 44px;
@@ -144,15 +244,90 @@ const [first, ...rest] = brand.name.split(' ');
       background-size var(--dur-med) var(--ease-out);
   }
 
-  .site-nav a:hover,
-  .site-nav a[aria-current='page'] {
+  .nav-link:hover,
+  .nav-link[aria-current='page'],
+  .nav-item[data-open] .nav-link {
     color: var(--ink);
     background-size: 100% 1px;
   }
 
-  .site-nav a[aria-current='page'] {
+  .nav-link[aria-current='page'] {
     background-image: linear-gradient(var(--olive-600), var(--olive-600));
     background-size: 100% 2px;
+  }
+
+  .nav-toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 32px;
+    margin-left: 0.15rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-s);
+    background: transparent;
+    color: var(--ink-muted);
+    cursor: pointer;
+    transition:
+      color var(--dur-fast) ease,
+      background-color var(--dur-fast) ease;
+  }
+
+  .nav-toggle[hidden] {
+    display: none;
+  }
+
+  .nav-toggle:hover,
+  .nav-item[data-open] .nav-toggle {
+    color: var(--ink);
+    background: var(--paper-2);
+  }
+
+  .nav-toggle svg {
+    transition: transform var(--dur-med) var(--ease-out);
+  }
+
+  .nav-item[data-open] .nav-toggle svg {
+    transform: rotate(180deg);
+  }
+
+  /* ----- dropdown panels ----- */
+
+  .nav-panel {
+    display: none;
+  }
+
+  .nav-panel__list {
+    display: grid;
+    margin: 0;
+  }
+
+  .nav-panel__link {
+    display: grid;
+    gap: 0.1rem;
+    min-height: 44px;
+    align-content: center;
+    padding: 0.5rem 0.75rem;
+    border-radius: var(--radius-m);
+    color: var(--ink);
+    text-decoration: none;
+    transition: background-color var(--dur-fast) ease;
+  }
+
+  .nav-panel__link:hover {
+    background: var(--paper-2);
+  }
+
+  .nav-panel__label {
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .nav-panel__note {
+    font-size: 0.8125rem;
+    line-height: 1.35;
+    color: var(--ink-muted);
   }
 
   .site-header__cta {
@@ -215,19 +390,50 @@ const [first, ...rest] = brand.name.split(' ');
       border-top: 1px solid var(--rule);
     }
 
-    .site-header[data-js][data-open] .site-nav ul {
+    .site-header[data-js][data-open] .site-nav__list {
       flex-direction: column;
     }
 
-
+    .site-header[data-js] .nav-item[data-open] .nav-panel {
+      display: block;
+      flex-basis: 100%;
+      margin: 0 0 0.5rem;
+      padding: 0.25rem;
+      border-left: 2px solid var(--sage-300);
+      animation: nav-drop var(--dur-med) var(--ease-out) both;
+    }
 
     .site-header[data-js] .site-header__inner {
       gap: 0 var(--space-3);
     }
   }
 
+  /* Where the browser runs scripts, start in the collapsed layout the script
+     will set up, so the page does not jump when it arrives. Browsers with
+     scripting off keep the open nav above. */
+  @media (scripting: enabled) and (max-width: 59.99rem) {
+    .site-header:not([data-open]) .site-nav {
+      display: none;
+    }
+
+    .site-header .site-header__inner {
+      gap: 0 var(--space-3);
+    }
+
+    .menu-btn[hidden] {
+      display: inline-flex;
+    }
+  }
+
+  /* Likewise the dropdown chevrons hold their space from the first paint. */
+  @media (scripting: enabled) {
+    .nav-toggle[hidden] {
+      display: inline-grid;
+    }
+  }
+
   /* On narrow phones the header CTA lives inside the open menu. */
-  @media (max-width: 24.99rem) {
+  @media (max-width: 29.99rem) {
     .site-header[data-js][data-open] .site-header__cta {
       display: block;
       order: 4;
@@ -236,7 +442,7 @@ const [first, ...rest] = brand.name.split(' ');
     }
   }
 
-  @media (min-width: 25rem) {
+  @media (min-width: 30rem) {
     .site-header__cta {
       display: block;
       order: 2;
@@ -261,9 +467,58 @@ const [first, ...rest] = brand.name.split(' ');
       flex-basis: auto;
     }
 
-    .site-nav ul {
-      gap: clamp(1rem, 0.5rem + 1.2vw, 2rem);
+    .site-nav__list {
+      gap: clamp(0.75rem, 0.25rem + 1vw, 1.75rem);
       padding-bottom: 0;
+    }
+
+    .nav-item {
+      flex-wrap: nowrap;
+    }
+
+    /* The panel hangs below its item. Its top padding bridges the gap, so
+       the pointer can travel from the link to the panel without closing it. */
+    .nav-panel {
+      display: block;
+      position: absolute;
+      top: 100%;
+      left: -0.75rem;
+      z-index: 60;
+      width: max-content;
+      min-width: 17rem;
+      max-width: 22rem;
+      padding-top: 0.5rem;
+      visibility: hidden;
+      opacity: 0;
+      transform: translateY(-6px);
+      transition:
+        opacity var(--dur-fast) ease,
+        transform var(--dur-med) var(--ease-out),
+        visibility 0s linear var(--dur-med);
+    }
+
+    .nav-panel__list {
+      padding: 0.5rem;
+      border: 1px solid var(--rule);
+      border-radius: var(--radius-l);
+      background: var(--white);
+      box-shadow: var(--shadow-frame);
+    }
+
+    .nav-item[data-open] .nav-panel,
+    .site-header:not([data-js]) .nav-item:hover .nav-panel,
+    .site-header:not([data-js]) .nav-item:focus-within .nav-panel {
+      visibility: visible;
+      opacity: 1;
+      transform: none;
+      transition-delay: 0s;
+    }
+  }
+
+  @keyframes nav-drop {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
     }
   }
 </style>

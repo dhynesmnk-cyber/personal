@@ -2,12 +2,13 @@
 /**
  * Dev-only: captures the project screenshots in src/assets/work/ from local
  * builds of each project, because the live sites are not reachable from every
- * build environment. Run with the three repos cloned next to this one, or
- * point the env vars at them:
+ * build environment. Run with both repos cloned next to this one, or point
+ * the env vars at them:
  *
  *   OBSERVATORY_DIR  weneedtotalkaboutdatacentres checkout
- *   COLDPATH_DIR     coldpath checkout
  *   BEE_DIR          bee-free-tools checkout (needs its built dist/)
+ *
+ * Coldpath has no screenshot: its case study embeds the prototype itself.
  *
  *   npm run capture
  *
@@ -25,8 +26,7 @@ const home = resolve(root, '..');
 
 /**
  * prepare: steps to reach the view worth showing.
- * clip:    crop in CSS pixels. Coldpath is cropped to the main panel so the
- *          prototype's sidebar (which names client staff) never appears.
+ * clip:    crop in CSS pixels.
  * css:     injected before capture, e.g. to pin a sticky table header that
  *          misplaces itself in headless Chromium.
  * allow:   off-box hosts the page may load (web fonts). Everything else is blocked.
@@ -37,25 +37,6 @@ const sources = {
     serve: 'data-pipeline/viewer',
     path: '/',
     css: 'thead, thead th { position: static !important; }',
-  },
-  coldpath: {
-    dir: process.env.COLDPATH_DIR ?? join(home, 'dhynesmnk-cyber/coldpath'),
-    serve: 'prototype',
-    path: '/coldpath-prototype.html',
-    // The prototype's demo PIN sits in its own page source. Read it from there
-    // rather than copying it into this repo.
-    prepare: async (page, dir) => {
-      const html = await readFile(join(dir, 'prototype/coldpath-prototype.html'), 'utf8');
-      const pin = html.match(/PIN_MARKETING\s*=\s*['"](\d{4})['"]/)?.[1];
-      if (!pin) throw new Error('Could not find the prototype demo PIN');
-      await page.keyboard.type(pin);
-      await page.getByRole('button', { name: 'Continue' }).click().catch(() => {});
-      await page.waitForTimeout(800);
-      await page.getByRole('button', { name: 'Skip tour' }).click().catch(() => {});
-      await page.getByText('Build List', { exact: false }).first().click();
-      await page.waitForTimeout(800);
-    },
-    clip: { x: 252, y: 72, width: 1172, height: 730 },
   },
   bee: {
     dir: process.env.BEE_DIR ?? join(home, 'bee-free-tools'),

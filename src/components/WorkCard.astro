@@ -3,7 +3,6 @@ import { Picture } from 'astro:assets';
 import { work, workHref, type WorkItem } from '../content/work';
 import Arrow from './Arrow.astro';
 import observatory from '../assets/work/observatory.png';
-import coldpath from '../assets/work/coldpath.png';
 import bee from '../assets/work/bee.png';
 
 /** A case study or build as a card. The title link covers the whole card. */
@@ -13,7 +12,7 @@ interface Props {
   level?: 'h2' | 'h3';
 }
 const { item, level = 'h3' } = Astro.props;
-const images = { observatory, coldpath, bee };
+const images = { observatory, bee };
 const Heading = level;
 ---
 

@@ -22,14 +22,26 @@
   [headers.values]
     Cache-Control = "public, max-age=86400"
 
-# No third-party scripts, frames, fonts or trackers. Everything is served from
-# this origin, so the policy can stay narrow.
+# Every page Astro builds carries its own strict Content-Security-Policy in a
+# <meta> tag (src/layouts/Base.astro): no inline script and no third-party
+# origins. The header here only adds what a meta tag cannot: who may frame the
+# site. Same-origin framing is allowed so the Coldpath case study can embed
+# its own prototype; nobody else can frame anything.
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+    Content-Security-Policy = "frame-ancestors 'self'; base-uri 'self'; object-src 'none'"
     Referrer-Policy = "strict-origin-when-cross-origin"
     X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
+    X-Frame-Options = "SAMEORIGIN"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Strict-Transport-Security = "max-age=63072000; includeSubDomains"
+
+# The Coldpath prototype is a single static file with an inline script and
+# inline handlers, and it makes no network requests. This policy lets it run
+# and still forbids every other origin. It repeats frame-ancestors so it holds
+# whether Netlify merges this rule with the one above or applies it alone.
+[[headers]]
+  for = "/work/coldpath/demo/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'; frame-ancestors 'self'"

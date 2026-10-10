@@ -9,12 +9,47 @@ interface Props {
   /** Page name, e.g. "Services". Omit on the home page. */
   title?: string;
   description?: string;
+  /** Share image, 1200 by 630, as a path under public/. */
+  image?: string;
+  imageAlt?: string;
+  /** "article" for case studies and insights. */
+  type?: 'website' | 'article';
+  /** Extra structured data for this page, such as an Article. */
+  schema?: Record<string, unknown>;
 }
-const { title, description = brand.description } = Astro.props;
+const {
+  title,
+  description = brand.description,
+  image = '/og.png',
+  imageAlt = `${brand.name}. AI tools that actually work in real business environments.`,
+  type = 'website',
+  schema,
+} = Astro.props;
 
 const fullTitle = title ? `${title} | ${brand.name}` : `${brand.name} | ${brand.tagline}`;
 const canonical = Astro.site ? new URL(Astro.url.pathname, Astro.site).href : undefined;
-const ogImage = Astro.site ? new URL('/og.png', Astro.site).href : '/og.png';
+const ogImage = Astro.site ? new URL(image, Astro.site).href : image;
+
+/*
+ * The Content-Security-Policy for every page the site builds. It lives here
+ * rather than in netlify.toml so the static Coldpath prototype (which carries
+ * its own inline script) can be served under a looser header without
+ * weakening any of these pages. frame-ancestors only works as a header, so
+ * netlify.toml still sets that for everything.
+ */
+const csp = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data:",
+  "font-src 'self'",
+  "connect-src 'self'",
+  "frame-src 'self'",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  ...(import.meta.env.PROD && Astro.site?.protocol === 'https:' ? ['upgrade-insecure-requests'] : []),
+].join('; ');
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -34,6 +69,7 @@ const jsonLd = {
 <html lang="en-AU">
   <head>
     <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content={csp} />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
@@ -47,7 +83,7 @@ const jsonLd = {
     <link rel="preload" href="/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="preload" href="/fonts/newsreader-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={type} />
     <meta property="og:site_name" content={brand.name} />
     <meta property="og:locale" content="en_AU" />
     <meta property="og:title" content={fullTitle} />
@@ -55,11 +91,12 @@ const jsonLd = {
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={`${brand.name}. AI tools that actually work in real business environments.`} />
+    <meta property="og:image:alt" content={imageAlt} />
     {canonical && <meta property="og:url" content={canonical} />}
     <meta name="twitter:card" content="summary_large_image" />
 
     <script is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    {schema && <script is:inline type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', ...schema })} />}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

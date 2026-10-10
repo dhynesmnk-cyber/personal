@@ -2,10 +2,9 @@
 import Base from '../layouts/Base.astro';
 import PageHero from '../components/PageHero.astro';
 import CTAButton from '../components/CTAButton.astro';
-import BridgeField from '../components/shapes/BridgeField.astro';
+import NorthStar from '../components/shapes/NorthStar.astro';
 import { BOOKING_IS_EMAIL, CONTACT_EMAIL, LINKS, brand, ctaBand } from '../content/brand';
 import { contact } from '../content/contact';
-import { home } from '../content/home';
 ---
 
 <Base title={contact.title} description={contact.description}>
@@ -20,8 +19,8 @@ import { home } from '../content/home';
         )
       }
     </div>
-    <div slot="visual">
-      <BridgeField mode="settled" labels={home.hero.zones} />
+    <div slot="visual" class="contact-sky">
+      <NorthStar mode="settled" id="ns-contact" />
     </div>
   </PageHero>
 
@@ -70,6 +69,15 @@ import { home } from '../content/home';
 </Base>
 
 <style>
+  .contact-sky {
+    padding: clamp(1rem, 0.5rem + 2vw, 2rem);
+    border-radius: var(--radius-l);
+    background:
+      radial-gradient(ellipse 70% 60% at 52% 20%, var(--forest-900) 0%, transparent 75%),
+      var(--forest-950);
+    overflow: hidden;
+  }
+
   .contact-actions {
     display: grid;
     gap: var(--space-4);

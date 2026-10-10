@@ -16,7 +16,7 @@ const builds = workItems.filter((w) => w.kind === 'build');
   <section class="section" aria-labelledby="clients-title">
     <div class="container">
       <h2 class="block-title" id="clients-title">{work.clientHeading}</h2>
-      <div class="grid grid--2">
+      <div class="grid grid--3">
         {clients.map((item) => <WorkCard item={item} />)}
       </div>
     </div>
@@ -27,7 +27,21 @@ const builds = workItems.filter((w) => w.kind === 'build');
       <SectionHead eyebrow={work.buildsEyebrow} heading={work.buildsHeading} id="builds-title">
         <p class="lede">{work.buildsIntro}</p>
       </SectionHead>
-      <div class="grid grid--3">
+      <ul class="checks" role="list">
+        {
+          work.transparency.map((pt) => (
+            <li>
+              <span class="checks__gate" aria-hidden="true">
+                <span />
+                <span />
+              </span>
+              <h3>{pt.title}</h3>
+              <p>{pt.body}</p>
+            </li>
+          ))
+        }
+      </ul>
+      <div class="grid grid--2">
         {builds.map((item) => <WorkCard item={item} />)}
       </div>
     </div>
@@ -55,5 +69,52 @@ const builds = workItems.filter((w) => w.kind === 'build');
     .grid--3 {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
+  }
+
+  /* ----- transparent by design ----- */
+
+  .checks {
+    display: grid;
+    gap: var(--space-4);
+    margin: 0 0 clamp(2.5rem, 2rem + 2vw, 3.5rem);
+  }
+
+  @media (min-width: 52rem) {
+    .checks {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .checks li {
+    display: grid;
+    grid-template-columns: 2rem 1fr;
+    gap: 0.25rem 0.75rem;
+    align-content: start;
+    padding: 1.25rem;
+    border-radius: var(--radius-m);
+    background: var(--white);
+    border: 1px solid var(--rule);
+  }
+
+  .checks__gate {
+    grid-row: span 2;
+    display: inline-flex;
+    gap: 4px;
+    padding-top: 0.35rem;
+  }
+
+  .checks__gate span {
+    width: 3px;
+    height: 1.1rem;
+    border-radius: 1px;
+    background: var(--forest-700);
+  }
+
+  .checks h3 {
+    font-size: 1.2rem;
+  }
+
+  .checks p {
+    color: var(--ink-muted);
   }
 </style>

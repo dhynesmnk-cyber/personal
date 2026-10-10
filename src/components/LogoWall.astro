@@ -2,14 +2,16 @@
 import { logoWall } from '../content/logos';
 
 /**
- * Rows of logos for the models and tools we work with. Each mark comes from
- * the /logos.svg sprite and sits beside its name in plain text.
+ * Three tiers of logos, ranked by size: frontier labs, then tools, then
+ * infrastructure. Each mark comes from the /logos.svg sprite and sits beside
+ * its name in plain text.
  *
- * With motion allowed, rows scroll slowly in alternating directions and a
+ * With motion allowed, rows drift slowly in alternating directions and a
  * Pause button stops them (WCAG 2.2.2); hovering a row pauses it too. With
  * reduced motion or no JavaScript, rows render as a static, wrapped grid and
  * the duplicate track used for looping is never shown.
  */
+const MARK = { 1: 30, 2: 24, 3: 20 } as const;
 ---
 
 <section class="lw" aria-labelledby="lw-title" data-logo-wall data-pause={logoWall.pause} data-play={logoWall.play}>
@@ -21,25 +23,30 @@ import { logoWall } from '../content/logos';
   <div class="lw__rows">
     {
       logoWall.rows.map((row, r) => (
-        <div class="lw__row" data-dir={r % 2 ? 'rev' : 'fwd'} style={`--n:${row.logos.length}`}>
-          <div class="lw__track">
-            {[false, true].map((clone) => (
-              <ul
-                class:list={['lw__list', clone && 'lw__list--clone']}
-                role="list"
-                aria-label={clone ? undefined : row.label}
-                aria-hidden={clone ? 'true' : undefined}
-              >
-                {row.logos.map((logo) => (
-                  <li class="lw__item">
-                    <svg class="lw__mark" aria-hidden="true" focusable="false" width="22" height="22">
-                      <use href={`/logos.svg#logo-${logo.id}`} />
-                    </svg>
-                    <span>{logo.name}</span>
-                  </li>
-                ))}
-              </ul>
-            ))}
+        <div class="lw__tier" data-tier={row.tier}>
+          <p class="lw__label" aria-hidden="true">
+            {row.label}
+          </p>
+          <div class="lw__row" data-dir={r % 2 ? 'rev' : 'fwd'} style={`--n:${row.logos.length}`}>
+            <div class="lw__track">
+              {[false, true].map((clone) => (
+                <ul
+                  class:list={['lw__list', clone && 'lw__list--clone']}
+                  role="list"
+                  aria-label={clone ? undefined : row.label}
+                  aria-hidden={clone ? 'true' : undefined}
+                >
+                  {row.logos.map((logo) => (
+                    <li class="lw__item">
+                      <svg class="lw__mark" aria-hidden="true" focusable="false" width={MARK[row.tier]} height={MARK[row.tier]}>
+                        <use href={`/logos.svg#logo-${logo.id}`} />
+                      </svg>
+                      <span>{logo.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              ))}
+            </div>
           </div>
         </div>
       ))
@@ -108,15 +115,28 @@ import { logoWall } from '../content/logos';
 
   .lw__rows {
     display: grid;
-    gap: var(--space-5);
+    gap: var(--space-6);
     width: min(100% - 2 * var(--gutter), var(--max));
     margin-inline: auto;
+  }
+
+  .lw__tier {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  .lw__label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
   }
 
   .lw__list {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.9rem 2rem;
+    gap: 1rem 2.25rem;
     margin: 0;
     padding: 0;
   }
@@ -128,18 +148,45 @@ import { logoWall } from '../content/logos';
   .lw__item {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
-    font-size: 0.9375rem;
+    gap: 0.6rem;
     font-weight: 600;
-    color: var(--olive-700);
     white-space: nowrap;
   }
 
   .lw__mark {
     flex: none;
-    width: 22px;
-    height: 22px;
+  }
+
+  /* Rank: labs largest and darkest, infrastructure smallest and quietest. */
+  [data-tier='1'] .lw__item {
+    font-size: 1.125rem;
+    color: var(--ink);
+  }
+
+  [data-tier='1'] .lw__mark {
+    color: var(--forest-900);
+  }
+
+  [data-tier='1'] .lw__list {
+    column-gap: 3rem;
+  }
+
+  [data-tier='2'] .lw__item {
+    font-size: 1rem;
+    color: var(--ink-muted);
+  }
+
+  [data-tier='2'] .lw__mark {
     color: var(--forest-700);
+  }
+
+  [data-tier='3'] .lw__item {
+    font-size: 0.875rem;
+    color: var(--ink-muted);
+  }
+
+  [data-tier='3'] .lw__mark {
+    color: var(--olive-600);
   }
 
   .lw__note {
@@ -154,6 +201,11 @@ import { logoWall } from '../content/logos';
     width: 100%;
   }
 
+  :global(.has-motion) .lw__label {
+    width: min(100% - 2 * var(--gutter), var(--max));
+    margin-inline: auto;
+  }
+
   :global(.has-motion) .lw__row {
     overflow: hidden;
     mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
@@ -162,16 +214,24 @@ import { logoWall } from '../content/logos';
   :global(.has-motion) .lw__track {
     display: flex;
     width: max-content;
-    animation: lw-scroll calc(var(--n) * 3.4s) linear infinite;
+    /* A slow drift: about nine seconds per logo, and never less than 99 seconds a loop. */
+    animation: lw-scroll calc(max(var(--n), 11) * 9s) linear infinite;
   }
 
   :global(.has-motion) .lw__row[data-dir='rev'] .lw__track {
     animation-direction: reverse;
   }
 
+  /* Each copy is at least as wide as the screen, so short rows loop without a gap. */
   :global(.has-motion) .lw__list {
     flex-wrap: nowrap;
-    padding-right: 2rem;
+    justify-content: space-around;
+    min-width: 100vw;
+    padding-right: 2.25rem;
+  }
+
+  :global(.has-motion) [data-tier='1'] .lw__list {
+    padding-right: 3rem;
   }
 
   :global(.has-motion) .lw__list--clone {

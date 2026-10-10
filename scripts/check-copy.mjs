@@ -2,7 +2,12 @@
 /**
  * Copy lint. Fails the build if site copy uses banned jargon, em or en dashes
  * used as dashes, or common US spellings where Australian English is wanted.
- * Scans every content file and the visible text of every component and page.
+ * Scans every content file, the words the Coldpath widgets write, and the
+ * visible text of every component and page.
+ *
+ * It also keeps the copy from repeating itself: any sentence of eight words
+ * or more that appears in two different files fails, as does "Melbourne"
+ * anywhere on the home page (the location belongs on About and Contact).
  */
 import { readFile, readdir } from 'node:fs/promises';
 import { join, relative, resolve } from 'node:path';
@@ -75,15 +80,29 @@ function extractCopy(file, source) {
 }
 
 const problems = [];
-const files = [];
+const files = [join(root, 'src/scripts/coldpath/copy.ts')];
 for await (const f of walk(join(root, 'src/content'))) if (f.endsWith('.ts')) files.push(f);
 for (const dir of ['src/components', 'src/layouts', 'src/pages']) {
   for await (const f of walk(join(root, dir))) if (f.endsWith('.astro')) files.push(f);
 }
 
+// Every sentence long enough to be a deliberate idea, and the files it is in.
+const sentences = new Map();
+const MIN_WORDS = 8;
+
 for (const file of files) {
   const source = await readFile(file, 'utf8');
+  const rel = relative(root, file);
+  if (/^src\/(content\/home\.ts|components\/HomeHero\.astro|pages\/index\.astro)$/.test(rel) && /Melbourne|brand\.location/.test(source)) {
+    problems.push(`${rel}: the home page should not mention Melbourne`);
+  }
   for (const text of extractCopy(file, source)) {
+    for (const sentence of text.split(/(?<=[.!?:])\s+/)) {
+      const key = sentence.toLowerCase().replace(/[^a-z0-9%' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+      if (key.split(' ').length < MIN_WORDS) continue;
+      if (!sentences.has(key)) sentences.set(key, new Set());
+      sentences.get(key).add(rel);
+    }
     const lower = text.toLowerCase();
     for (const word of banned) {
       const re = new RegExp(`\\b${word.replace(/[-\s]/g, '[-\\s]')}`, 'i');
@@ -94,6 +113,15 @@ for (const file of files) {
       if (re.test(text)) problems.push(`${relative(root, file)}: US spelling ${re} in "${text.slice(0, 80)}"`);
     }
   }
+}
+
+for (const [sentence, where] of sentences) {
+  if (where.size > 1) problems.push(`repeated in ${[...where].join(' and ')}: "${sentence.slice(0, 80)}"`);
+}
+
+// Scripts can write copy into the page too, so no dashes there either.
+for await (const f of walk(join(root, 'src/scripts'))) {
+  if (/—|\s–\s/.test(await readFile(f, 'utf8'))) problems.push(`${relative(root, f)}: em or en dash`);
 }
 
 if (problems.length) {

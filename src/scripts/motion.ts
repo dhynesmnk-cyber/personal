@@ -6,6 +6,8 @@
  *   the viewport. "through" (default) runs while the element crosses the
  *   screen; "exit" runs from the top of the page until the element is
  *   partly scrolled away.
+ * - [data-live] marks a shape with looping animation. It gains
+ *   [data-paused] while off screen, so it costs nothing when out of view.
  *
  * Nothing here is needed to read or use the page. With reduced motion
  * requested, or without JavaScript, the script does nothing and every shape
@@ -105,8 +107,16 @@ function initScrub(): void {
   window.addEventListener('resize', schedule, { passive: true });
 }
 
+function initLive(): void {
+  const io = new IntersectionObserver((entries) => {
+    for (const entry of entries) entry.target.toggleAttribute('data-paused', !entry.isIntersecting);
+  });
+  for (const el of document.querySelectorAll('[data-live]')) io.observe(el);
+}
+
 if (!reduceMotion.matches && 'IntersectionObserver' in window) {
   initReveal();
   initScrub();
+  initLive();
   document.documentElement.classList.add('has-motion');
 }

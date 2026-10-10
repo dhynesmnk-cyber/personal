@@ -1,8 +1,7 @@
 ---
 import { BOOKING_IS_EMAIL, CONTACT_EMAIL, ctaBand } from '../content/brand';
-import { home } from '../content/home';
 import CTAButton from './CTAButton.astro';
-import BridgeField from './shapes/BridgeField.astro';
+import NorthStar from './shapes/NorthStar.astro';
 
 /** The closing call to action at the foot of every page. */
 ---
@@ -24,7 +23,7 @@ import BridgeField from './shapes/BridgeField.astro';
       }
     </div>
     <div class="cta-band__visual">
-      <BridgeField mode="settled" labels={home.hero.zones} />
+      <NorthStar mode="settled" id="ns-cta" />
     </div>
   </div>
 </section>
@@ -82,22 +81,10 @@ import BridgeField from './shapes/BridgeField.astro';
     text-decoration-color: currentColor;
   }
 
-  /* Re-tint the bridge for the dark band. */
   .cta-band__visual {
-    --paper: var(--forest-950);
-    --paper-3: #2a4636;
-    --moss-100: #24402f;
-    --rule-strong: #4b6a55;
-    --sage-200: #3a5a46;
-    --sage-300: #5d7a63;
-    --forest-700: var(--lime-200);
-    --forest-900: var(--lime-200);
-    --ink-muted: var(--sage-200);
-    color: #c9d4bd;
-  }
-
-  .cta-band__visual :global(.bridge__labels) {
-    color: #b8c6aa;
+    width: 100%;
+    max-width: 34rem;
+    justify-self: center;
   }
 
   @media (min-width: 64rem) {

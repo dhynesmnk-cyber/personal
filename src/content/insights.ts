@@ -1,4 +1,4 @@
-/** Insights: policy, research and (later) articles. */
+/** Insights: articles, policy and research. The article text itself is in articles.ts. */
 
 import { LINKS } from './brand';
 
@@ -7,23 +7,27 @@ export interface Article {
   summary: string;
   href: string;
   date: string;
+  readingTime: string;
 }
 
 export const insights = {
   title: 'Insights',
   description:
-    'Our submission to the Joint Select Committee on Artificial Intelligence and independent research on Australian data centre development, sovereign compute and infrastructure risk.',
+    'Field notes on AI governance and adoption, a submission to the Joint Select Committee on Artificial Intelligence, and independent research on Australian data centre development.',
   hero: {
     eyebrow: 'Insights',
     heading: 'AI policy is an infrastructure question.',
-    lede: 'Our research and policy work looks at the physical side of AI: where the data centres are going, who is behind them, and what that means for anyone planning around AI.',
+    lede: 'My research and policy work looks at the physical side of AI: where the data centres are being built, who is behind them, and what that means for anyone planning around AI.',
   },
+  articlesEyebrow: 'Field notes',
+  articlesHeading: 'Articles',
+  readArticle: 'Read the article',
   submission: {
     eyebrow: 'Policy',
     heading: 'On the parliamentary record',
     paragraphs: [
-      "David Hynes made a written submission to the Australian Parliament's Joint Select Committee on Artificial Intelligence, and will be giving oral evidence to the committee.",
-      'The submission draws on our independent research into Australian data centre development, sovereign compute capacity and infrastructure risk.',
+      "I made a written submission to the Australian Parliament's Joint Select Committee on Artificial Intelligence, and I will give oral evidence to the committee.",
+      'The submission draws on my independent research into Australian data centre development, sovereign compute capacity and infrastructure risk.',
     ],
     record: [
       { label: 'Written submission', detail: 'Joint Select Committee on Artificial Intelligence, Parliament of Australia, 2026' },
@@ -35,8 +39,8 @@ export const insights = {
     eyebrow: 'Research',
     heading: 'Independent research on Australian data centres',
     paragraphs: [
-      'Our observatory tracks the physical footprint of the build-out, the capital behind it, the rules that permit it, how much sovereign compute capacity the country actually has, and where the infrastructure risk sits.',
-      'Every fact points to a source and every gap is explained, so the findings can be checked by anyone who needs to rely on them.',
+      'My observatory tracks the physical footprint of the build-out, the capital behind it, the rules that permit it, how much sovereign compute the country actually has, and where the infrastructure risk sits.',
+      'Each finding is sourced and graded, so anyone who relies on it can check it for themselves.',
     ],
     stats: [
       { value: '93', label: 'data centre sites tracked' },
@@ -54,11 +58,19 @@ export const insights = {
     eyebrow: 'Why it matters',
     heading: 'Every AI plan runs on physical infrastructure.',
     paragraphs: [
-      'Models run in data centres that have to be powered, cooled, approved and governed. Those limits shape cost, timing and risk for every organisation adopting AI, whether or not it ever sees a server.',
-      'It is the same constraint our work with Wärtsilä deals with every day: power and grid connections for US data centre development. We bring that view to every strategy we write.',
+      'Models run in data centres that need power, cooling, approvals and oversight. Those limits shape the cost, timing and risk of every AI program, whether or not an organisation ever sees a server.',
+      'My work with Wärtsilä deals with the same constraint every day: power and grid connections for US data centre development. I bring that view to every strategy I write.',
     ],
   },
-  articlesHeading: 'Articles',
-  /** Add articles here as they are published. The section stays hidden while empty. */
-  articles: [] as Article[],
+  /** Newest first. Each one needs a page in src/pages/insights/. */
+  articles: [
+    {
+      title: 'The gate is the product',
+      summary:
+        'Clients do not buy the model. They buy confidence that the system knows when it is wrong. A field note with six practical rules.',
+      href: '/insights/the-gate-is-the-product/',
+      date: 'October 2026',
+      readingTime: '4 minute read',
+    },
+  ] satisfies Article[],
 };

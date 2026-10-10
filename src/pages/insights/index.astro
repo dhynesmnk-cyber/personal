@@ -1,12 +1,12 @@
 ---
-import Base from '../layouts/Base.astro';
-import PageHero from '../components/PageHero.astro';
-import SectionHead from '../components/SectionHead.astro';
-import CtaBand from '../components/CtaBand.astro';
-import Arrow from '../components/Arrow.astro';
-import LayerStack from '../components/shapes/LayerStack.astro';
-import { LINKS } from '../content/brand';
-import { insights } from '../content/insights';
+import Base from '../../layouts/Base.astro';
+import PageHero from '../../components/PageHero.astro';
+import SectionHead from '../../components/SectionHead.astro';
+import CtaBand from '../../components/CtaBand.astro';
+import Arrow from '../../components/Arrow.astro';
+import LayerStack from '../../components/shapes/LayerStack.astro';
+import { LINKS } from '../../content/brand';
+import { insights } from '../../content/insights';
 
 const { submission, research, matters } = insights;
 ---
@@ -14,7 +14,34 @@ const { submission, research, matters } = insights;
 <Base title={insights.title} description={insights.description}>
   <PageHero eyebrow={insights.hero.eyebrow} heading={insights.hero.heading} lede={insights.hero.lede} />
 
-  <section class="section" aria-labelledby="submission-title">
+  {
+    insights.articles.length > 0 && (
+      <section class="section" id="articles" aria-labelledby="articles-title">
+        <div class="container">
+          <SectionHead eyebrow={insights.articlesEyebrow} heading={insights.articlesHeading} id="articles-title" />
+          <ul class="articles" role="list">
+            {insights.articles.map((a) => (
+              <li class="article-card">
+                <p class="article-card__meta">
+                  {a.date} <span aria-hidden="true">·</span> {a.readingTime}
+                </p>
+                <h3 class="article-card__title">
+                  <a href={a.href}>{a.title}</a>
+                </h3>
+                <p class="article-card__summary">{a.summary}</p>
+                <p class="article-card__more" aria-hidden="true">
+                  {insights.readArticle}
+                  <Arrow />
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section--alt" id="submission" aria-labelledby="submission-title">
     <div class="container split">
       <div class="split__copy">
         <SectionHead eyebrow={submission.eyebrow} heading={submission.heading} id="submission-title" />
@@ -43,7 +70,7 @@ const { submission, research, matters } = insights;
     </div>
   </section>
 
-  <section class="section section--alt" aria-labelledby="research-title">
+  <section class="section" id="research" aria-labelledby="research-title">
     <div class="container split split--visual">
       <div class="split__copy">
         <SectionHead eyebrow={research.eyebrow} heading={research.heading} id="research-title" />
@@ -72,7 +99,7 @@ const { submission, research, matters } = insights;
     </div>
   </section>
 
-  <section class="section" aria-labelledby="matters-title">
+  <section class="section section--alt" aria-labelledby="matters-title">
     <div class="container narrow">
       <SectionHead eyebrow={matters.eyebrow} heading={matters.heading} id="matters-title" />
       <div class="prose">
@@ -80,25 +107,6 @@ const { submission, research, matters } = insights;
       </div>
     </div>
   </section>
-
-  {
-    insights.articles.length > 0 && (
-      <section class="section section--alt" aria-labelledby="articles-title">
-        <div class="container">
-          <h2 id="articles-title">{insights.articlesHeading}</h2>
-          <ul class="articles" role="list">
-            {insights.articles.map((a) => (
-              <li>
-                <a href={a.href}>{a.title}</a>
-                <p>{a.summary}</p>
-                <p class="muted">{a.date}</p>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    )
-  }
 
   <CtaBand />
 </Base>
@@ -220,9 +228,82 @@ const { submission, research, matters } = insights;
     margin-bottom: var(--space-6);
   }
 
+  /* ----- articles ----- */
+
   .articles {
     display: grid;
     gap: var(--space-5);
-    margin-top: var(--space-6);
+    margin: 0;
+  }
+
+  @media (min-width: 52rem) {
+    .articles {
+      grid-template-columns: repeat(auto-fill, minmax(26rem, 1fr));
+    }
+  }
+
+  .article-card {
+    position: relative;
+    display: grid;
+    gap: var(--space-3);
+    align-content: start;
+    padding: clamp(1.4rem, 1rem + 1.4vw, 2rem);
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--forest-900);
+    border-radius: 0 0 var(--radius-l) var(--radius-l);
+    background: var(--white);
+    transition:
+      border-color 0.3s ease,
+      box-shadow 0.4s var(--ease-out),
+      transform 0.4s var(--ease-out);
+  }
+
+  .article-card:hover,
+  .article-card:focus-within {
+    box-shadow: var(--shadow-frame);
+    transform: translateY(-3px);
+  }
+
+  .article-card__meta {
+    font-size: var(--step--1);
+    font-weight: 600;
+    color: var(--olive-700);
+  }
+
+  .article-card__title {
+    font-size: var(--step-3);
+  }
+
+  .article-card__title a {
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  .article-card__title a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+
+  .article-card__summary {
+    max-width: 36rem;
+    color: var(--ink-muted);
+  }
+
+  .article-card__more {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--forest-900);
+  }
+
+  .article-card__more :global(.arrow) {
+    transition: transform var(--dur-med) var(--ease-out);
+  }
+
+  .article-card:hover .article-card__more :global(.arrow) {
+    transform: translateX(4px);
   }
 </style>
