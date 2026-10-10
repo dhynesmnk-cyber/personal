@@ -24,7 +24,7 @@ const Sub = level === 'h2' ? 'h3' : 'h4';
   <ol class="approach__points" role="list">
     {
       approach.points.map((pt, i) => (
-        <li>
+        <li data-fade style={`--d:${i}`}>
           <span class="approach__num" aria-hidden="true">
             {String(i + 1).padStart(2, '0')}
           </span>

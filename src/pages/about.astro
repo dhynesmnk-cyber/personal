@@ -22,7 +22,7 @@ const { founder } = about;
           {founder.paragraphs.map((p) => <p>{p}</p>)}
         </div>
       </div>
-      <figure class="founder__quote">
+      <figure class="founder__quote" data-fade>
         <Mark size={30} />
         <blockquote>
           <p>{founder.quote}</p>
@@ -38,7 +38,7 @@ const { founder } = about;
       <ol class="principles" role="list">
         {
           about.principles.map((pr, i) => (
-            <li>
+            <li data-fade style={`--d:${i}`}>
               <span class="principles__num" aria-hidden="true">
                 {String(i + 1).padStart(2, '0')}
               </span>
@@ -58,8 +58,8 @@ const { founder } = about;
         <div>
           <ol class="tl" role="list" data-scrub>
             {
-              about.experience.map((t) => (
-                <li class="tl__item">
+              about.experience.map((t, i) => (
+                <li class="tl__item" data-fade style={`--d:${Math.min(i, 2)}`}>
                   <p class="tl__when">{t.when}</p>
                   <div class="tl__body">
                     <h3 class="tl__org">{t.org}</h3>
@@ -74,7 +74,7 @@ const { founder } = about;
             <span>{about.earlier.label}</span>
             {about.earlier.body}
           </p>
-          <div class="creds">
+          <div class="creds" data-fade>
             <h3>{about.credentialsHeading}</h3>
             <ul role="list">
               {about.credentials.map((c) => <li>{c}</li>)}

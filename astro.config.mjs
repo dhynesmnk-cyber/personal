@@ -22,6 +22,10 @@ export default defineConfig({
       // Never inline scripts or assets into the HTML, so the CSP can forbid
       // inline script outright (script-src 'self').
       assetsInlineLimit: 0,
+      // Keep CSS readable by older phones: without this the minifier rewrites
+      // media queries into range syntax (width >= 64rem), which Safari only
+      // understands from 16.4, and older iPhones would lose every layout rule.
+      cssTarget: ['chrome100', 'firefox100', 'safari14'],
     },
   },
 });

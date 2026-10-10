@@ -31,9 +31,9 @@ const w = wartsila;
           </div>
         </div>
 
-        <aside class="result" aria-labelledby="case-result">
+        <aside class="result" aria-labelledby="case-result" data-fade>
           <h2 id="case-result" class="result__title">{cs.result.title}</h2>
-          <p class="stat">{cs.result.stat}</p>
+          <p class="stat" data-count>{cs.result.stat}</p>
           <p class="result__label">{cs.result.statLabel}</p>
           <ReductionBars reduction={parseInt(cs.result.stat, 10)} />
           <p class="result__body">{cs.result.body}</p>
@@ -51,7 +51,7 @@ const w = wartsila;
         />
       </div>
 
-      <div class="case__output">
+      <div class="case__output" data-fade>
         <div class="case__output-copy">
           <h2>{cs.outputTitle}</h2>
           <p>{cs.outputBody}</p>
@@ -68,7 +68,7 @@ const w = wartsila;
       <p class="case__intro">{w.intro}</p>
 
       <div class="ws__grid">
-        <div class="ws__card ws__card--wide">
+        <div class="ws__card ws__card--wide" data-fade>
           <div class="ws__copy">
             <h2>{w.intel.title}</h2>
             <p>{w.intel.body}</p>
@@ -76,10 +76,10 @@ const w = wartsila;
           <GatePipeline steps={w.intel.pipeline} label={w.intel.pipelineLabel} tone="paper" />
         </div>
 
-        <div class="ws__card ws__card--triage">
+        <div class="ws__card ws__card--triage" data-fade>
           <h2>{w.triage.title}</h2>
           <div class="ws__stat">
-            <p class="stat">{w.triage.stat}</p>
+            <p class="stat" data-count>{w.triage.stat}</p>
             <p class="result__label">{w.triage.statLabel}</p>
           </div>
           <ReductionBars reduction={parseInt(w.triage.stat, 10)} />
@@ -87,7 +87,7 @@ const w = wartsila;
           <FanIn sources={w.triage.sources} output={w.triage.output} label={w.triage.sourcesLabel} />
         </div>
 
-        <div class="ws__card ws__card--brief">
+        <div class="ws__card ws__card--brief" data-fade style="--d:1">
           <h2>{w.briefing.title}</h2>
           <p>{w.briefing.body}</p>
           <div class="ws__brief-visual">

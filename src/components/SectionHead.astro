@@ -11,7 +11,7 @@ const { num, eyebrow, heading, id, level = 'h2' } = Astro.props;
 const Heading = level;
 ---
 
-<header class="section-head">
+<header class="section-head" data-fade>
   <p class="eyebrow">
     {num && <span class="eyebrow__num">{num}</span>}
     <span class="eyebrow__bar" aria-hidden="true"></span>

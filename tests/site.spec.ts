@@ -24,11 +24,15 @@ const ROUTES = [
 async function scrollThrough(page: Page): Promise<void> {
   await page.evaluate(async () => {
     const step = Math.round(window.innerHeight * 0.6);
+    // Instant steps, like a reader scrolling; the site's smooth scrolling
+    // would otherwise jump over whole sections between steps.
     for (let y = 0; y < document.documentElement.scrollHeight; y += step) {
-      window.scrollTo(0, y);
-      await new Promise((r) => setTimeout(r, 30));
+      window.scrollTo({ top: y, behavior: 'instant' });
+      await new Promise((r) => setTimeout(r, 40));
     }
-    window.scrollTo(0, 0);
+    // Rest at the bottom for a moment, as a reader would, before going back up.
+    await new Promise((r) => setTimeout(r, 250));
+    window.scrollTo({ top: 0, behavior: 'instant' });
   });
 }
 
@@ -211,17 +215,20 @@ test.describe('home', () => {
     }
   });
 
-  test('the constellation organises as the hero scrolls away', async ({ page }) => {
+  test('the constellation assembles as soon as it is on screen, and work flows', async ({ page }) => {
     await page.goto('/');
     const sky = page.locator('.hero .ns');
     await expect(sky.locator('svg')).toHaveAttribute('aria-hidden', 'true');
-    await expect.poll(() => sky.evaluate((el) => Number(el.style.getPropertyValue('--p') || 0))).toBeLessThan(0.1);
-    await page.mouse.wheel(0, 600);
-    await expect.poll(() => sky.evaluate((el) => Number(el.style.getPropertyValue('--p')))).toBeGreaterThan(0.5);
-    const running = await page.evaluate(
-      () => document.getAnimations().filter((a) => (a.effect as KeyframeEffect | null)?.target?.closest('.hero .ns')).length,
-    );
-    expect(running).toBeGreaterThan(10);
+    await expect(sky).toHaveClass(/is-on/, { timeout: 1500 });
+    // Within about two seconds the loose work has gathered onto the streams.
+    await page.waitForTimeout(2200);
+    const settled = await sky.locator('.ns__settle').first().evaluate((el) => getComputedStyle(el).transform);
+    expect(settled).not.toBe('none');
+    // Travellers move along the streams, driven by attribute so every browser animates them.
+    const traveller = sky.locator('[data-traveller]').first();
+    const before = await traveller.getAttribute('cy');
+    await page.waitForTimeout(400);
+    expect(await traveller.getAttribute('cy')).not.toBe(before);
   });
 });
 
@@ -453,6 +460,41 @@ test.describe('performance and policy', () => {
 /* ------------------------------------------------------------------ motion */
 
 test.describe('motion', () => {
+  test('every fading block ends up visible once scrolled past, on every page', async ({ page }) => {
+    test.setTimeout(120_000);
+    for (const route of ROUTES) {
+      await page.goto(route);
+      // A reader scrolls once the page is up; wait for the motion script too.
+      await expect(page.locator('html')).toHaveClass(/has-motion/);
+      await scrollThrough(page);
+      await page.waitForTimeout(1600);
+      const hidden = await page.$$eval('[data-fade]', (els) =>
+        els.filter((el) => Number(getComputedStyle(el).opacity) < 0.99).map((el) => el.className || el.tagName),
+      );
+      expect(hidden, route).toEqual([]);
+    }
+  });
+
+  test('headline numbers count up and land on their real values', async ({ page }) => {
+    await page.goto('/');
+    const stats = page.locator('#results [data-count]');
+    const finals = await stats.allTextContents();
+    expect(finals).toEqual(['65%', '60%', '112']);
+    await page.locator('#results').scrollIntoViewIfNeeded();
+    await expect.poll(() => stats.allTextContents()).toEqual(finals);
+  });
+
+  test('without JavaScript every fading block is simply shown', async ({ browser }) => {
+    const context = await browser.newContext({ javaScriptEnabled: false });
+    const page = await context.newPage();
+    for (const route of ['/', '/work/coldpath/']) {
+      await page.goto(route);
+      const faded = await page.$$eval('[data-fade]', (els) => els.filter((el) => getComputedStyle(el).opacity !== '1').length);
+      expect(faded, route).toBe(0);
+    }
+    await context.close();
+  });
+
   test('reduced motion: nothing animates and shapes are final', async ({ browser }) => {
     const context = await browser.newContext({ reducedMotion: 'reduce' });
     const page = await context.newPage();

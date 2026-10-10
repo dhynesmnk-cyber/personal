@@ -46,9 +46,9 @@ const schema = {
     <div class="container">
       <ul class="cp-stats" role="list">
         {
-          c.hero.stats.map((s) => (
-            <li class:list={[s.accent && 'is-accent']}>
-              <span class="cp-stats__value">{s.value}</span>
+          c.hero.stats.map((s, i) => (
+            <li class:list={[s.accent && 'is-accent']} data-fade style={`--d:${i}`}>
+              <span class="cp-stats__value" data-count>{s.value}</span>
               <span class="cp-stats__label">{s.label}</span>
             </li>
           ))
@@ -83,7 +83,7 @@ const schema = {
         <p class="lede">{c.outlier.lede}</p>
       </SectionHead>
 
-      <figure class="cp-chart" role="img" aria-label={c.outlier.chartLabel}>
+      <figure class="cp-chart" data-fade role="img" aria-label={c.outlier.chartLabel}>
         {
           c.outlier.bars.map((b) => (
             <div class:list={['cp-chart__row', b.kind && `is-${b.kind}`]} style={`--w:${b.width}%`}>
@@ -107,7 +107,7 @@ const schema = {
         </div>
       </figure>
 
-      <div class="cp-defect">
+      <div class="cp-defect" data-fade>
         <h3>{c.outlier.defect.title}</h3>
         <dl>
           {
@@ -121,14 +121,14 @@ const schema = {
         </dl>
       </div>
 
-      <figure class="cp-quote">
+      <figure class="cp-quote" data-fade>
         <blockquote>
           <p>{c.outlier.quote}</p>
         </blockquote>
         <figcaption>{c.outlier.quoteSource}</figcaption>
       </figure>
 
-      <div class="cp-aside">
+      <div class="cp-aside" data-fade>
         <p>{c.outlier.aside}</p>
         <a class="text-link" href="#book">{c.asideButton}<Arrow /></a>
       </div>
@@ -142,7 +142,7 @@ const schema = {
         <p class="lede">{c.nearMiss.lede}</p>
       </SectionHead>
 
-      <div class="cp-defect cp-defect--warn">
+      <div class="cp-defect cp-defect--warn" data-fade>
         <h3>{c.nearMiss.defect.title}</h3>
         <dl>
           {
@@ -158,7 +158,7 @@ const schema = {
 
       <p class="cp-intro">{c.nearMiss.intro}</p>
 
-      <div class="cp-widget" id="auditor">
+      <div class="cp-widget" data-fade id="auditor">
         <div class="cp-widget__head">
           <h3>{c.auditor.title}</h3>
           <span class="cp-badge">{c.auditor.badge}</span>
@@ -213,7 +213,7 @@ const schema = {
       <ol class="cp-pipe" role="list" aria-label={c.method.pipelineLabel}>
         {
           c.method.pipeline.map((step, i) => (
-            <li class:list={['cp-pipe__step', step.kind && `is-${step.kind}`]}>
+            <li class:list={['cp-pipe__step', step.kind && `is-${step.kind}`]} data-fade style={`--d:${i}`}>
               <span class="cp-pipe__n" aria-hidden="true">
                 {num(i)}
               </span>
@@ -226,8 +226,8 @@ const schema = {
 
       <ul class="cp-cards" role="list">
         {
-          c.method.principles.map((p) => (
-            <li class="cp-card">
+          c.method.principles.map((p, i) => (
+            <li class="cp-card" data-fade style={`--d:${i}`}>
               <span class="cp-card__tag">{p.tag}</span>
               <h3>{p.title}</h3>
               <p>{p.body}</p>
@@ -238,7 +238,7 @@ const schema = {
 
       <p class="cp-intro">{c.method.intro}</p>
 
-      <div class="cp-widget" id="gates">
+      <div class="cp-widget" data-fade id="gates">
         <div class="cp-widget__head">
           <h3>{c.gates.title}</h3>
           <span class="cp-badge">{c.gates.badge}</span>
@@ -247,7 +247,7 @@ const schema = {
         <div class="cp-widget__body">
           <div class="cp-chips" id="gatePresets" role="group" aria-label={c.gates.presetsLabel}></div>
           <p class="cp-rec" id="gateRec"></p>
-          <div class="cp-table-wrap" role="region" aria-label={c.gates.title} tabindex="0">
+          <div class="cp-table-wrap" data-fade role="region" aria-label={c.gates.title} tabindex="0">
             <table class="cp-gates">
               <thead>
                 <tr>{c.gates.columns.map((h) => <th scope="col">{h}</th>)}</tr>
@@ -270,7 +270,7 @@ const schema = {
         <p class="lede">{c.outcomes.lede}</p>
       </SectionHead>
 
-      <div class="cp-table-wrap" role="region" aria-labelledby="outcomes-caption" tabindex="0">
+      <div class="cp-table-wrap" data-fade role="region" aria-labelledby="outcomes-caption" tabindex="0">
         <table class="cp-table">
           <caption id="outcomes-caption">{c.outcomes.tableCaption}</caption>
           <thead>
@@ -295,12 +295,12 @@ const schema = {
         </table>
       </div>
 
-      <details class="cp-details">
+      <details class="cp-details" data-fade>
         <summary>{c.outcomes.howTitle}</summary>
         <p>{c.outcomes.how}</p>
       </details>
 
-      <div class="cp-compare">
+      <div class="cp-compare" data-fade>
         {
           c.outcomes.compare.map((col) => (
             <div class:list={['cp-panel', `is-${col.tone}`]}>
@@ -315,17 +315,17 @@ const schema = {
         }
       </div>
 
-      <div class="cp-note">
+      <div class="cp-note" data-fade>
         <p class="cp-note__title">{c.outcomes.honestTitle}</p>
         <p>{c.outcomes.honest}</p>
       </div>
 
-      <div class="cp-sub">
+      <div class="cp-sub" data-fade>
         <h3>{c.outcomes.secondHeading}</h3>
         <p>{c.outcomes.second}</p>
       </div>
 
-      <div class="cp-widget" id="calc">
+      <div class="cp-widget" data-fade id="calc">
         <div class="cp-widget__head">
           <h3>{c.calc.title}</h3>
           <span class="cp-badge cp-badge--soft">{c.calc.badge}</span>
@@ -387,7 +387,7 @@ const schema = {
         }
       </div>
 
-      <ul class="cp-codes" role="list">
+      <ul class="cp-codes" data-fade role="list">
         {
           c.demo.codes.map((code) => (
             <li>
@@ -398,7 +398,7 @@ const schema = {
         <li class="cp-codes__note">{c.demo.codesNote}</li>
       </ul>
 
-      <div class="cp-demo">
+      <div class="cp-demo" data-fade>
         <iframe id="demoFrame" data-base={DEMO_PATH} src={demoSrc(firstView)} title={c.demo.frameTitle} loading="lazy"></iframe>
         <div class="cp-demo__bar">
           <p id="demoCaption">{firstView.caption}</p>
@@ -410,7 +410,7 @@ const schema = {
       </div>
       <p class="cp-small">{c.demo.remember}</p>
 
-      <div class="cp-compare">
+      <div class="cp-compare" data-fade>
         {
           c.demo.compare.map((col) => (
             <div class:list={['cp-panel', `is-${col.tone}`]}>
@@ -425,7 +425,7 @@ const schema = {
         }
       </div>
 
-      <div class="cp-aside">
+      <div class="cp-aside" data-fade>
         <p>{c.demo.aside}</p>
         <a class="text-link" href="#book">{c.asideButton}<Arrow /></a>
       </div>
@@ -441,8 +441,8 @@ const schema = {
 
       <ul class="cp-cards cp-cards--two" role="list">
         {
-          c.playbook.tests.map((t) => (
-            <li class="cp-card">
+          c.playbook.tests.map((t, i) => (
+            <li class="cp-card" data-fade style={`--d:${i}`}>
               <span class="cp-card__tag">{t.tag}</span>
               <h3>{t.title}</h3>
               <p>{t.body}</p>
@@ -451,7 +451,7 @@ const schema = {
         }
       </ul>
 
-      <div class="cp-table-wrap" role="region" aria-labelledby="playbook-caption" tabindex="0">
+      <div class="cp-table-wrap" data-fade role="region" aria-labelledby="playbook-caption" tabindex="0">
         <table class="cp-table cp-table--wide">
           <caption id="playbook-caption">{c.playbook.tableCaption}</caption>
           <thead>
@@ -472,12 +472,12 @@ const schema = {
         </table>
       </div>
 
-      <div class="cp-note">
+      <div class="cp-note" data-fade>
         <p class="cp-note__title">{c.playbook.ruleTitle}</p>
         <p>{c.playbook.rule}</p>
       </div>
 
-      <div class="cp-aside">
+      <div class="cp-aside" data-fade>
         <p>{c.playbook.aside}</p>
         <a class="text-link" href="#book">{c.asideButton}<Arrow /></a>
       </div>
@@ -491,7 +491,7 @@ const schema = {
         <p class="lede">{c.howIWork.lede}</p>
       </SectionHead>
 
-      <figure class="cp-log">
+      <figure class="cp-log" data-fade>
         <figcaption>{c.howIWork.logTitle}</figcaption>
         <ul role="list">
           {
@@ -509,23 +509,23 @@ const schema = {
 
       <ul class="cp-stats cp-stats--four" role="list">
         {
-          c.howIWork.stats.map((s) => (
-            <li>
-              <span class="cp-stats__value">{s.value}</span>
+          c.howIWork.stats.map((s, i) => (
+            <li data-fade style={`--d:${i}`}>
+              <span class="cp-stats__value" data-count>{s.value}</span>
               <span class="cp-stats__label">{s.label}</span>
             </li>
           ))
         }
       </ul>
 
-      <div class="cp-sub cp-prose">
+      <div class="cp-sub cp-prose" data-fade>
         <h3>{c.howIWork.checksHeading}</h3>
         {c.howIWork.checks.map((p) => <p>{p}</p>)}
       </div>
 
-      <div class="cp-sub">
+      <div class="cp-sub" data-fade>
         <h3>{c.howIWork.workingHeading}</h3>
-        <div class="cp-compare">
+        <div class="cp-compare" data-fade>
           {
             c.howIWork.working.map((col) => (
               <div class="cp-panel">
@@ -553,7 +553,7 @@ const schema = {
       <ol class="cp-cards" role="list">
         {
           c.book.steps.map((s, i) => (
-            <li class="cp-card">
+            <li class="cp-card" data-fade style={`--d:${i}`}>
               <span class="cp-card__tag">{num(i)}</span>
               <h3>{s.title}</h3>
               <p>{s.body}</p>
@@ -562,12 +562,12 @@ const schema = {
         }
       </ol>
 
-      <div class="cp-note">
+      <div class="cp-note" data-fade>
         <p class="cp-note__title">{c.book.dataTitle}</p>
         <p>{c.book.data}</p>
       </div>
 
-      <div class="cp-book__cta">
+      <div class="cp-book__cta" data-fade>
         <a class="cp-button" href={WHITESPACE_RUN_URL}>{c.book.button}<Arrow /></a>
         <p class="cp-small">{c.book.buttonNote}</p>
       </div>
@@ -579,8 +579,8 @@ const schema = {
       <h2 class="cp-notes__title" id="notes-title">{c.notes.heading}</h2>
       <div class="cp-notes__grid">
         {
-          c.notes.items.map((n) => (
-            <div>
+          c.notes.items.map((n, i) => (
+            <div data-fade style={`--d:${i}`}>
               <h3>{n.title}</h3>
               <p>{n.body}</p>
             </div>

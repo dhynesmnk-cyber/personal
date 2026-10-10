@@ -22,9 +22,12 @@
 
 name: coldpath-freshness-pull
 
+# Paused: the coldpath repo does not publish website/data/freshness.json
+# yet, so every scheduled run would fail. Re-enable the schedule once it
+# does. It can still be run by hand from the Actions tab.
 on:
-  schedule:
-    - cron: "0 8 * * 1"        # Mondays 08:00 UTC — 2h after the upstream pull
+  # schedule:
+  #   - cron: "0 8 * * 1"        # Mondays 08:00 UTC, 2h after the upstream pull
   workflow_dispatch: {}
 
 permissions:
